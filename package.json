@@ -1,0 +1,25 @@
+{
+  "devDependencies": {
+    "@types/node": "^26.3.0",
+    "typescript": "^7.0.2"
+  },
+  "name": "agent-wrapped",
+  "version": "0.1.0",
+  "type": "module",
+  "license": "MIT",
+  "description": "Local-first wrapped card for your Claude Code usage. Nothing leaves your machine.",
+  "engines": {
+    "node": ">=20"
+  },
+  "bin": {
+    "agent-wrapped": "dist/cli.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "tsc -p tsconfig.test.json && node --test 'dist-test/test/**/*.test.js'"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ]
+}
