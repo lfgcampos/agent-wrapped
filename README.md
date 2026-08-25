@@ -4,8 +4,11 @@
 transcripts, rendered on your own machine, sent nowhere.
 
 ```sh
-npx agent-wrapped
+npx @lfgcampos/agent-wrapped
 ```
+
+The package is scoped; the command it installs is plain `agent-wrapped`, so after a
+global install you just run that.
 
 ```
   CLAUDE CODE · 33 ACTIVE DAYS                  2026-07-16 → 2026-08-25
@@ -53,12 +56,12 @@ so a screenshot is safe to post.
 ## Usage
 
 ```sh
-npx agent-wrapped                 # terminal card, all available history
-npx agent-wrapped --since 30d     # window: 30d, 12w, 6m, or 2026-08-01
-npx agent-wrapped --html          # self-contained page, prints its path
-npx agent-wrapped --json          # raw stats, for your own charts
-npx agent-wrapped --no-save       # skip writing a snapshot
-npx agent-wrapped --help
+npx @lfgcampos/agent-wrapped                 # terminal card, all available history
+npx @lfgcampos/agent-wrapped --since 30d     # window: 30d, 12w, 6m, or 2026-08-01
+npx @lfgcampos/agent-wrapped --html          # self-contained page, prints its path
+npx @lfgcampos/agent-wrapped --json          # raw stats, for your own charts
+npx @lfgcampos/agent-wrapped --no-save       # skip writing a snapshot
+npx @lfgcampos/agent-wrapped --help
 ```
 
 `--since` is *faster* than a full run: any transcript last written before the cutoff

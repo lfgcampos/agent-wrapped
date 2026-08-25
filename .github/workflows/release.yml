@@ -48,8 +48,8 @@ jobs:
       - name: Verify this version is not already published
         run: |
           PKG="$(node -p "require('./package.json').version")"
-          if npm view "agent-wrapped@$PKG" version >/dev/null 2>&1; then
-            echo "::error::agent-wrapped@$PKG is already on npm. Bump the version."
+          if npm view "@lfgcampos/agent-wrapped@$PKG" version >/dev/null 2>&1; then
+            echo "::error::@lfgcampos/agent-wrapped@$PKG is already on npm. Bump the version."
             exit 1
           fi
 
@@ -71,5 +71,5 @@ jobs:
       - name: Summarise
         run: |
           PKG="$(node -p "require('./package.json').version")"
-          echo "Published agent-wrapped@$PKG" >> "$GITHUB_STEP_SUMMARY"
-          echo "https://www.npmjs.com/package/agent-wrapped/v/$PKG" >> "$GITHUB_STEP_SUMMARY"
+          echo "Published @lfgcampos/agent-wrapped@$PKG" >> "$GITHUB_STEP_SUMMARY"
+          echo "https://www.npmjs.com/package/@lfgcampos/agent-wrapped/v/$PKG" >> "$GITHUB_STEP_SUMMARY"

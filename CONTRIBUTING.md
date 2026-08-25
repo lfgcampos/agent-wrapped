@@ -51,7 +51,7 @@ across two days for anyone west of Greenwich. This broke streaks once already.
 
 Tests are `node:test` with no framework. Two things worth knowing:
 
-- **Test the real entry point.** A bug once made `npx agent-wrapped` a silent
+- **Test the real entry point.** A bug once made `npx @lfgcampos/agent-wrapped` a silent
   no-op while every unit test passed, because nothing spawned the binary.
   `test/entrypoint.test.ts` exists to stop that recurring.
 - **Fixture data hides display bugs.** Clean, well-separated fixture numbers once

@@ -3,7 +3,7 @@
     "@types/node": "^26.3.0",
     "typescript": "^7.0.2"
   },
-  "name": "agent-wrapped",
+  "name": "@lfgcampos/agent-wrapped",
   "version": "0.1.0",
   "type": "module",
   "license": "MIT",
@@ -41,5 +41,8 @@
     "usage",
     "statistics",
     "local-first"
-  ]
+  ],
+  "publishConfig": {
+    "access": "public"
+  }
 }
