@@ -1,0 +1,49 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        # Every supported Node line: 22 and 24 are LTS, 26 is Current.
+        # Node 20 is deliberately absent — it reached end-of-life in March 2026.
+        node: ['22', '24', '26']
+        os: [ubuntu-latest]
+        include:
+          # The tool reads paths and timestamps, so prove it on other platforms too.
+          - { node: '24', os: macos-latest }
+          - { node: '24', os: windows-latest }
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
+
+  timezones:
+    # Day boundaries are computed in local time; a UTC-only CI would hide bugs
+    # that only appear for users east or west of Greenwich.
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        tz: ['UTC', 'America/Los_Angeles', 'Pacific/Auckland', 'Asia/Kolkata']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npm test
+        env:
+          TZ: ${{ matrix.tz }}

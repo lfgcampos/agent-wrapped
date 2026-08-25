@@ -9,17 +9,37 @@
   "license": "MIT",
   "description": "Local-first wrapped card for your Claude Code usage. Nothing leaves your machine.",
   "engines": {
-    "node": ">=20"
+    "node": ">=22"
   },
   "bin": {
     "agent-wrapped": "dist/cli.js"
   },
   "scripts": {
     "build": "tsc",
-    "test": "tsc -p tsconfig.test.json && node --test 'dist-test/test/**/*.test.js'"
+    "test": "tsc -p tsconfig.test.json && node --test 'dist-test/test/**/*.test.js'",
+    "prepublishOnly": "npm test && npm run build"
   },
   "files": [
     "dist",
-    "README.md"
+    "README.md",
+    "LICENSE"
+  ],
+  "author": "Lucas Campos",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lfgcampos/agent-wrapped.git"
+  },
+  "bugs": {
+    "url": "https://github.com/lfgcampos/agent-wrapped/issues"
+  },
+  "homepage": "https://github.com/lfgcampos/agent-wrapped#readme",
+  "keywords": [
+    "claude",
+    "claude-code",
+    "cli",
+    "wrapped",
+    "usage",
+    "statistics",
+    "local-first"
   ]
 }

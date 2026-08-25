@@ -1,4 +1,5 @@
 import { join } from 'node:path';
+import { readFileSync } from 'node:fs';
 import { writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { discover } from './discover.js';
@@ -17,6 +18,43 @@ import { renderHtml } from './render-html.js';
  * it at a fixture tree. Importing this module must never execute anything —
  * that is why the bin wrapper lives in cli.ts.
  */
+const HELP = `agent-wrapped — a local-first wrapped card for your Claude Code usage.
+
+Usage
+  agent-wrapped [options]
+
+Options
+  --since <window>   Limit to a window: 30d, 12w, 6m, or a date like 2026-08-01.
+                     Faster than a full run — older transcripts are never opened.
+  --html             Write a self-contained HTML page and print its path.
+  --json             Print the raw stats as JSON.
+  --no-save          Do not write a snapshot for this run.
+  --version, -v      Print the version.
+  --help, -h         Print this help.
+
+Snapshots
+  Every full run saves a ~1 KB summary to ~/.agent-wrapped/snapshots/ and
+  compares against the most recent earlier one, so you can keep a year of
+  history without keeping a year of transcripts.
+
+Privacy
+  Everything happens on your machine.
+  No network calls, no account, no telemetry.
+  Repository names are never printed — they are only grouping keys.
+  Reads ~/.claude/projects and ~/.claude/settings.json, and nothing else.`;
+
+/** Version comes from package.json so it can never drift from what npm published. */
+function readVersion(): string {
+  for (const rel of ['../package.json', '../../package.json']) {
+    try {
+      return JSON.parse(readFileSync(new URL(rel, import.meta.url), 'utf8')).version ?? 'unknown';
+    } catch {
+      // try the next candidate — layout differs between dist/ and the test build
+    }
+  }
+  return 'unknown';
+}
+
 function flagValue(argv: string[], name: string): string | undefined {
   const i = argv.indexOf(name);
   if (i >= 0 && argv[i + 1]) return argv[i + 1];
@@ -25,6 +63,9 @@ function flagValue(argv: string[], name: string): string | undefined {
 }
 
 export async function run(argv: string[], home: string): Promise<string> {
+  if (argv.includes('--help') || argv.includes('-h')) return HELP;
+  if (argv.includes('--version') || argv.includes('-v')) return readVersion();
+
   const sinceRaw = flagValue(argv, '--since');
   let since: Date | null = null;
   if (sinceRaw !== undefined) {

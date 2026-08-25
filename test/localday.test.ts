@@ -28,8 +28,11 @@ async function eveningSession(): Promise<string> {
 }
 
 async function activeDays(tz: string): Promise<string> {
+  // One fixture home, used for both variables: os.homedir() reads HOME on
+  // POSIX and USERPROFILE on Windows.
+  const home = await eveningSession();
   const { stdout } = await exec(process.execPath, [cli], {
-    env: { ...process.env, HOME: await eveningSession(), TZ: tz },
+    env: { ...process.env, HOME: home, USERPROFILE: home, TZ: tz },
   });
   return stdout.match(/(\d+) ACTIVE DAYS/)![1]!;
 }
@@ -47,7 +50,7 @@ test('reports a clear message when files exist but hold no usable records', asyn
   const project = join(root, '.claude', 'projects', '-Users-me-p');
   await mkdir(project, { recursive: true });
   await writeFile(join(project, 's.jsonl'), '{"type":"user","message":{}}\n');
-  const { stdout } = await exec(process.execPath, [cli], { env: { ...process.env, HOME: root } });
+  const { stdout } = await exec(process.execPath, [cli], { env: { ...process.env, HOME: root, USERPROFILE: root } });
   assert.match(stdout, /no usable/i);
   assert.doesNotMatch(stdout, /0 ACTIVE DAYS/);
 });

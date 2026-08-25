@@ -28,15 +28,17 @@ async function home(): Promise<string> {
 }
 
 test('the bin produces output when executed as a subprocess', async () => {
-  const { stdout } = await exec(process.execPath, [cli], { env: { ...process.env, HOME: await home() } });
+  const h = await home();
+  const { stdout } = await exec(process.execPath, [cli], { env: { ...process.env, HOME: h, USERPROFILE: h } });
   assert.match(stdout, /tokens read for every token written/);
   assert.ok(stdout.trim().length > 0, 'the bin must not be a silent no-op');
 });
 
 test('importing run has no side effects — it must not print on import', async () => {
   const probe = `import('${join(here, '..', 'src', 'run.js')}').then(() => process.stdout.write('QUIET'));`;
+  const h = await home();
   const { stdout } = await exec(process.execPath, ['--input-type=module', '-e', probe], {
-    env: { ...process.env, HOME: await home() },
+    env: { ...process.env, HOME: h, USERPROFILE: h },
   });
   assert.equal(stdout, 'QUIET');
 });
