@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>agent-wrapped — how you actually work with Claude Code</title>
+<meta name="description" content="A local-first wrapped card for how you work with Claude Code. Reads your own transcripts, renders on your machine, sends nothing anywhere.">
+<meta property="og:title" content="agent-wrapped">
+<meta property="og:description" content="A wrapped card for how you actually work with Claude Code. Nothing leaves your machine.">
+<meta property="og:type" content="website">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><text y='13' font-size='14'>📊</text></svg>">
+<style>
+  /* One family, many roles. A CLI page has no business in a proportional face. */
+  :root {
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+    --bg: #fdfcfb;
+    --fg: #1c1917;
+    --dim: #78716c;
+    --faint: #a8a29e;
+    --rule: #e7e5e4;
+    --accent: #c2410c;
+    --accent-bg: #fff4ed;
+    --measure: 80ch;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0c0a09;
+      --fg: #e7e5e4;
+      --dim: #a8a29e;
+      --faint: #78716c;
+      --rule: #292524;
+      --accent: #fb923c;
+      --accent-bg: #1c1310;
+    }
+  }
+
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--fg);
+    font-family: var(--mono);
+    font-size: 15px;
+    line-height: 1.65;
+    padding: 2.5rem 1.25rem 4rem;
+  }
+  main { max-width: var(--measure); margin: 0 auto; }
+
+  /* Man-page header rule: left name, centred section, right name. */
+  .manline {
+    display: flex; justify-content: space-between; gap: 1rem;
+    font-size: 11px; letter-spacing: .14em; text-transform: uppercase;
+    color: var(--faint); border-bottom: 1px solid var(--rule);
+    padding-bottom: .6rem; margin-bottom: 2.5rem;
+  }
+  .manline span:nth-child(2) { color: var(--dim); }
+
+  h2 {
+    font-size: 12px; letter-spacing: .18em; text-transform: uppercase;
+    color: var(--accent); font-weight: 700;
+    margin: 3rem 0 .9rem;
+  }
+  h2:first-of-type { margin-top: 0; }
+
+  p { margin: 0 0 1rem; max-width: 68ch; }
+  .indent { padding-left: 2ch; }
+  a { color: var(--accent); text-underline-offset: 3px; }
+  a:focus-visible, button:focus-visible {
+    outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 2px;
+  }
+
+  /* NAME line, man-page style: name — one-sentence description. */
+  .name { font-size: clamp(1.1rem, 4.5vw, 1.45rem); font-weight: 700; margin: 0 0 .4rem; }
+  .tagline { color: var(--dim); margin: 0 0 .2rem; }
+
+  /* The command is the page's single job — give it the most weight. */
+  .cmd {
+    display: flex; align-items: stretch; gap: 0;
+    border: 1px solid var(--rule); border-radius: 4px;
+    background: var(--accent-bg); overflow: hidden; margin: 0 0 .6rem;
+  }
+  .cmd code {
+    flex: 1; padding: .85rem 1rem; overflow-x: auto; white-space: nowrap;
+    font-size: clamp(13px, 3.4vw, 16px); color: var(--fg);
+  }
+  .cmd code::before { content: "$ "; color: var(--faint); }
+  .cmd button {
+    flex: none; border: 0; border-left: 1px solid var(--rule);
+    background: transparent; color: var(--dim); cursor: pointer;
+    font: inherit; font-size: 11px; letter-spacing: .12em;
+    text-transform: uppercase; padding: 0 1rem;
+  }
+  .cmd button:hover { color: var(--accent); }
+  .cmd button[data-copied="yes"] { color: var(--accent); }
+
+  /* The card: real, selectable text — the product itself, not a picture of it. */
+  .card {
+    border: 1px solid var(--rule); border-radius: 4px;
+    padding: 1.25rem 1rem; overflow-x: auto; margin: 0;
+    font-size: clamp(10px, 2.55vw, 13px); line-height: 1.5;
+    color: var(--fg); background: var(--bg);
+  }
+  .card b { color: var(--accent); font-weight: 700; }
+  .card .ratio { font-size: 2.1em; line-height: 1.15; color: var(--accent); font-weight: 700; }
+  .card .dim { color: var(--dim); }
+
+  dl { margin: 0; }
+  dt { color: var(--accent); margin-top: 1rem; }
+  dd { margin: 0; color: var(--dim); max-width: 66ch; }
+
+  ul { padding-left: 2ch; margin: 0 0 1rem; }
+  li { margin-bottom: .4rem; }
+  li::marker { color: var(--faint); }
+
+  .footrule {
+    display: flex; justify-content: space-between; gap: 1rem;
+    font-size: 11px; letter-spacing: .14em; text-transform: uppercase;
+    color: var(--faint); border-top: 1px solid var(--rule);
+    padding-top: .6rem; margin-top: 3.5rem;
+  }
+  @media (max-width: 30rem) {
+    .manline, .footrule { flex-direction: column; gap: .1rem; }
+    .manline span:nth-child(2), .footrule span:nth-child(2) { order: -1; }
+  }
+</style>
+</head>
+<body>
+<main>
+
+  <div class="manline"><span>agent-wrapped(1)</span><span>User Commands</span><span>agent-wrapped(1)</span></div>
+
+  <h2>Name</h2>
+  <p class="name indent">agent-wrapped</p>
+  <p class="tagline indent">A wrapped card for how you actually work with Claude&nbsp;Code —<br>read from your own logs, rendered on your machine, sent nowhere.</p>
+
+  <h2>Synopsis</h2>
+  <div class="cmd">
+    <code id="cmd">npx @lfgcampos/agent-wrapped</code>
+    <button type="button" id="copy" aria-label="Copy the install command">Copy</button>
+  </div>
+  <p class="indent"><span style="color:var(--faint)">Node 22+. No install, no account, no config.</span></p>
+
+  <h2>Output</h2>
+<pre class="card" aria-label="Example output of agent-wrapped">
+  CLAUDE CODE · 33 ACTIVE DAYS              2026-07-16 → 2026-08-25
+
+<span class="ratio">         394 : 1</span>
+         tokens read for every token written
+
+  4-day streak · longest 18 · you work most at 3pm
+  <b>▂▂▂▅▅▁▁▁▁▁▁▂▁▁▂█▆▇▃▄▅▆▆▃</b>   19% of your writing is weekend work
+  <span class="dim">00                      23</span>
+
+   <b>98%</b>   of what it read was cache — the same context, re-sent
+   <b>42%</b>   of your calls were subagents…
+    <b>6%</b>   …but they wrote only that share of the words
+   <b>58%</b>   of your writing went to 3 of your 19 repos
+
+  WHAT YOU REACH FOR                <span class="dim">(% of 49,566 tool calls)</span>
+  <b>██████████████</b>  62%  Bash
+  <b>███</b><span class="dim">░░░░░░░░░░░</span>  14%  Read
+  <b>██</b><span class="dim">░░░░░░░░░░░░</span>  13%  Edit
+  <b>█</b><span class="dim">░░░░░░░░░░░░░</span>   4%  Write
+
+  15.2 agent turns for every message you send · 733 sessions
+
+  BATTLE SCARS
+     <b>4</b>   times you hit the usage limit, across 3 weeks
+    <b>14</b>   times the server was overloaded on you
+</pre>
+
+  <h2>Privacy</h2>
+  <p>Everything happens on your machine. There is no server to send anything to.</p>
+  <ul>
+    <li><b>No network calls.</b> No account, no analytics, no version check.</li>
+    <li><b>Zero runtime dependencies.</b> No third-party code to audit but this.</li>
+    <li><b>About a thousand lines.</b> Read it and confirm both claims yourself.</li>
+  </ul>
+  <p>It reads two paths, both read-only: <code>~/.claude/projects</code> and
+     <code>~/.claude/settings.json</code>. Your repository names are never rendered,
+     never logged, and never written to <code>--json</code> — they are grouping keys,
+     discarded before display. A screenshot is safe to post.</p>
+
+  <h2>What the numbers mean</h2>
+  <p>Every percentage names its denominator, because the same figure can be honest
+     two different ways.</p>
+  <dl>
+    <dt>394 : 1</dt>
+    <dd>Context tokens read per token written. Rate-free and comparable between
+        people, however heavily they use Claude Code.</dd>
+    <dt>98% cache</dt>
+    <dd>Cache reads over all context read — not over all tokens.</dd>
+    <dt>42% / 6% subagents</dt>
+    <dd>Share of calls, then share of words written. Reported as a pair on purpose:
+        subagents read heavily and write little.</dd>
+    <dt>Skill and tool shares</dt>
+    <dd>Weighted by tokens written, never by total tokens. Totals are dominated by
+        cache reads, which would flatten everything to the same value.</dd>
+  </dl>
+  <p>There are no costs anywhere, deliberately. Pricing local usage at API rates
+     values a behaviour that only exists <em>because</em> it is not billed that way,
+     so the number would be fiction rather than a saving.</p>
+
+  <h2>Options</h2>
+  <dl>
+    <dt>--since 30d</dt>
+    <dd>Limit to a window: <code>30d</code>, <code>12w</code>, <code>6m</code>, or a
+        date. Faster than a full run — older transcripts are never opened.</dd>
+    <dt>--html</dt>
+    <dd>Write a self-contained page and print its path.</dd>
+    <dt>--json</dt>
+    <dd>Raw stats, for your own charts.</dd>
+  </dl>
+  <p>Each full run saves a ~1&nbsp;KB snapshot and compares against the last one, so
+     you can keep a year of history without keeping a year of transcripts.</p>
+
+  <h2>See also</h2>
+  <ul>
+    <li><a href="https://github.com/lfgcampos/agent-wrapped">github.com/lfgcampos/agent-wrapped</a> — source, issues</li>
+    <li><a href="https://www.npmjs.com/package/@lfgcampos/agent-wrapped">npmjs.com/package/@lfgcampos/agent-wrapped</a></li>
+    <li><a href="https://whatkindof.dev">whatkindof.dev</a> — asks how you <em>think</em> you work; this reads what your logs say</li>
+  </ul>
+
+  <h2>Author</h2>
+  <p class="indent">Lucas Campos ·
+     <a href="https://lfgcampos.substack.com">Substack</a> ·
+     <a href="https://www.linkedin.com/in/lfgcampos/">LinkedIn</a> ·
+     <a href="https://github.com/lfgcampos">GitHub</a></p>
+
+  <div class="footrule"><span>agent-wrapped 0.1.0</span><span>MIT</span><span>agent-wrapped(1)</span></div>
+
+</main>
+<script>
+  // The page's one job is getting that command onto the clipboard.
+  const button = document.getElementById('copy');
+  const command = document.getElementById('cmd').textContent.trim();
+  button.addEventListener('click', async () => {
+    try {
+      await navigator.clipboard.writeText(command);
+    } catch {
+      // Clipboard API needs a secure context and permission; fall back quietly.
+      const field = document.createElement('textarea');
+      field.value = command;
+      field.setAttribute('readonly', '');
+      field.style.position = 'fixed';
+      field.style.opacity = '0';
+      document.body.appendChild(field);
+      field.select();
+      try { document.execCommand('copy'); } catch { /* nothing more to try */ }
+      field.remove();
+    }
+    button.textContent = 'Copied';
+    button.dataset.copied = 'yes';
+    setTimeout(() => { button.textContent = 'Copy'; delete button.dataset.copied; }, 1600);
+  });
+</script>
+</body>
+</html>
