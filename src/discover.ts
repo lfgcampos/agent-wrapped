@@ -1,4 +1,4 @@
-import { readdir } from 'node:fs/promises';
+import { readdir, stat } from 'node:fs/promises';
 import { join, sep } from 'node:path';
 import type { TranscriptFile } from './types.js';
 
@@ -34,13 +34,27 @@ async function walk(dir: string, out: string[]): Promise<void> {
 export async function discover(root: string): Promise<TranscriptFile[]> {
   const paths: string[] = [];
   await walk(root, paths);
-  return paths.map((path) => {
-    const rel = path.slice(root.length + 1);
-    const segments = rel.split(sep);
-    return {
-      path,
-      project: normalizeProject(segments[0]!),
-      fromSubagentDir: segments.includes('subagents'),
-    };
-  });
+  const files = await Promise.all(
+    paths.map(async (path) => {
+      const rel = path.slice(root.length + 1);
+      const segments = rel.split(sep);
+      let size = 0;
+      let mtime = 0;
+      try {
+        const st = await stat(path);
+        size = st.size;
+        mtime = st.mtimeMs;
+      } catch {
+        // a file that vanished mid-scan simply contributes nothing
+      }
+      return {
+        path,
+        size,
+        mtime,
+        project: normalizeProject(segments[0]!),
+        fromSubagentDir: segments.includes('subagents'),
+      };
+    }),
+  );
+  return files;
 }

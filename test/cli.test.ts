@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { mkdtemp, mkdir, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { run } from '../src/cli.js';
+import { run } from '../src/run.js';
 
 async function home(): Promise<string> {
   const root = await mkdtemp(join(tmpdir(), 'aw-'));

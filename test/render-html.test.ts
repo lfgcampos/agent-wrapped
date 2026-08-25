@@ -7,11 +7,11 @@ const stats: Stats = {
   calls: 42362, firstDay: '2026-07-16', lastDay: '2026-08-24', activeDays: 31,
   written: 26174559, contextRead: 10437777367, readWriteRatio: 398.8,
   cacheShare: 0.982, subagentCallShare: 0.424, subagentWrittenShare: 0.061,
-  repoCount: 19, topThreeShare: 0.59, skillAttributedShare: 0.27, distinctSkills: 40,
+  repoCount: 19, topThreeShare: 0.59, topRepoShare: 0.24, skillAttributedShare: 0.27, distinctSkills: 40,
   topSkills: [{ skill: 'superpowers:brainstorming', written: 1_100_000, share: 0.17 }],
   topFourSkillShare: 0.54,
 };
-const retention: Retention = { windowDays: 31, cleanupPeriodDays: null, atRisk: true };
+const retention: Retention = { windowDays: 31, cleanupPeriodDays: null, atRisk: true, bytesOnDisk: 9e8, bytesPerDay: 2.6e7, suggestedDays: 60, suggestedBytes: 1.6e9, yearBytes: 9.7e9 };
 
 test('produces a self-contained page with no external requests', () => {
   const html = renderHtml(stats, retention);

@@ -82,3 +82,9 @@ test('empty input produces zeroes rather than NaN', () => {
   assert.equal(s.cacheShare, 0);
   assert.equal(s.topSkills.length, 0);
 });
+
+test('single-repo users get a top-repo share rather than nonsense about three repos', () => {
+  const s = computeStats([rec({ project: 'only', output: 100 })]);
+  assert.equal(s.repoCount, 1);
+  assert.equal(s.topRepoShare, 1);
+});

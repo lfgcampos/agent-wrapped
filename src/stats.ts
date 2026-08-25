@@ -1,5 +1,19 @@
 import type { SkillShare, Stats, UsageRecord } from './types.js';
 
+/**
+ * Calendar day in the viewer's own timezone.
+ *
+ * Transcript timestamps are UTC. Slicing the ISO string would give every user
+ * the UTC answer, so an evening session west of Greenwich would be split across
+ * two days — wrong for active-day counts and fatal for streaks.
+ */
+export function localDay(ts: string): string {
+  if (!ts) return '';
+  const d = new Date(ts);
+  if (Number.isNaN(d.getTime())) return '';
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
 /** Guarded division — an empty dataset must yield 0, never NaN or Infinity. */
 function ratio(numerator: number, denominator: number): number {
   return denominator === 0 ? 0 : numerator / denominator;
@@ -23,7 +37,7 @@ export function computeStats(records: UsageRecord[]): Stats {
   const cacheRead = records.reduce((n, r) => n + r.cacheRead, 0);
   const contextRead = records.reduce((n, r) => n + r.input + r.cacheCreate + r.cacheRead, 0);
 
-  const days = [...new Set(records.map((r) => r.ts.slice(0, 10)).filter(Boolean))].sort();
+  const days = [...new Set(records.map((r) => localDay(r.ts)).filter(Boolean))].sort();
 
   const subagents = records.filter((r) => r.isSubagent);
 
@@ -50,6 +64,7 @@ export function computeStats(records: UsageRecord[]): Stats {
     subagentWrittenShare: ratio(subagents.reduce((n, r) => n + r.output, 0), written),
     repoCount: byProject.length,
     topThreeShare: ratio(byProject.slice(0, 3).reduce((n, w) => n + w, 0), written),
+    topRepoShare: ratio(byProject[0] ?? 0, written),
     skillAttributedShare: ratio(skillWritten, written),
     distinctSkills: bySkill.size,
     topSkills,

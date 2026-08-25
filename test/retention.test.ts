@@ -9,7 +9,7 @@ import type { Stats } from '../src/types.js';
 const stats = (firstDay: string, lastDay: string): Stats => ({
   calls: 1, firstDay, lastDay, activeDays: 1, written: 1, contextRead: 1,
   readWriteRatio: 1, cacheShare: 0, subagentCallShare: 0, subagentWrittenShare: 0,
-  repoCount: 1, topThreeShare: 1, skillAttributedShare: 0, distinctSkills: 0,
+  repoCount: 1, topThreeShare: 1, topRepoShare: 1, skillAttributedShare: 0, distinctSkills: 0,
   topSkills: [], topFourSkillShare: 0,
 });
 
@@ -46,4 +46,28 @@ test('computes the window in days, inclusive', async () => {
 test('a short window on an unconfigured install is not yet at risk', async () => {
   const r = await detectRetention(await settings(null), stats('2026-08-20', '2026-08-24'));
   assert.equal(r.atRisk, false);
+});
+
+const files = (size: number, count: number) =>
+  Array.from({ length: count }, (_, i) => ({
+    path: `/tmp/f${i}.jsonl`, size, mtime: 0, project: 'a', fromSubagentDir: false,
+  }));
+
+test('a heavy user is not told to keep a year — 27 MB/day is ~10 GB', async () => {
+  const s = { ...stats('2026-07-16', '2026-08-24'), activeDays: 30 };
+  const r = await detectRetention(await settings(null), s, files(27_000_000, 30));
+  assert.equal(r.suggestedDays, 60, 'a year would blow the disk budget');
+  assert.ok(r.yearBytes > 9e9, 'the year projection is surfaced so the user can overrule');
+});
+
+test('a light user is safely told to keep a year', async () => {
+  const s = { ...stats('2026-07-16', '2026-08-24'), activeDays: 30 };
+  const r = await detectRetention(await settings(null), s, files(1_000_000, 30));
+  assert.equal(r.suggestedDays, 365);
+});
+
+test('no files means no division by zero', async () => {
+  const r = await detectRetention(await settings(null), stats('2026-07-16', '2026-08-24'), []);
+  assert.equal(r.bytesPerDay, 0);
+  assert.equal(r.suggestedDays, 365);
 });

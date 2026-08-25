@@ -1,0 +1,80 @@
+import type { Rhythm, ToolShare, UsageRecord } from './types.js';
+import { localDay } from './stats.js';
+
+const DAY_MS = 86_400_000;
+
+function ratio(a: number, b: number): number {
+  return b === 0 ? 0 : a / b;
+}
+
+/** Consecutive-day runs over a sorted, unique list of local day strings. */
+function streaks(days: string[]): { longest: number; trailing: number } {
+  if (days.length === 0) return { longest: 0, trailing: 0 };
+  let longest = 1;
+  let run = 1;
+  for (let i = 1; i < days.length; i++) {
+    const gap = Date.parse(days[i]!) - Date.parse(days[i - 1]!);
+    run = gap === DAY_MS ? run + 1 : 1;
+    longest = Math.max(longest, run);
+  }
+  return { longest, trailing: run };
+}
+
+/**
+ * Streaks, working hours and weekend load — all derived from timestamps, which
+ * every user has regardless of how they work.
+ *
+ * `now` is injected so the "is the streak still alive" rule is testable.
+ */
+export function computeRhythm(records: UsageRecord[], now: Date = new Date()): Rhythm {
+  const hours = new Array<number>(24).fill(0);
+  let weekendWritten = 0;
+  let written = 0;
+  const daySet = new Set<string>();
+
+  for (const r of records) {
+    if (!r.ts) continue;
+    const d = new Date(r.ts);
+    if (Number.isNaN(d.getTime())) continue;
+    hours[d.getHours()] = (hours[d.getHours()] ?? 0) + 1;
+    written += r.output;
+    const dow = d.getDay();
+    if (dow === 0 || dow === 6) weekendWritten += r.output;
+    daySet.add(localDay(r.ts));
+  }
+
+  const days = [...daySet].filter(Boolean).sort();
+  const { longest, trailing } = streaks(days);
+
+  // A streak is only "current" if it reaches today or yesterday; otherwise it is history.
+  const today = localDay(now.toISOString());
+  const last = days[days.length - 1] ?? '';
+  const daysSince = last ? Math.round((Date.parse(today) - Date.parse(last)) / DAY_MS) : Infinity;
+  const currentStreak = daysSince <= 1 ? trailing : 0;
+
+  let peakHour = 0;
+  for (let h = 1; h < 24; h++) if ((hours[h] ?? 0) > (hours[peakHour] ?? 0)) peakHour = h;
+
+  return { hours, peakHour, weekendShare: ratio(weekendWritten, written), currentStreak, longestStreak: longest };
+}
+
+export function toolShares(counts: Record<string, number>): ToolShare[] {
+  const total = Object.values(counts).reduce((n, v) => n + v, 0);
+  return Object.entries(counts)
+    .map(([tool, calls]) => ({ tool, calls, share: ratio(calls, total) }))
+    .sort((a, b) => b.calls - a.calls);
+}
+
+export function sessionStats(sessionCalls: Record<string, number>): {
+  count: number;
+  median: number;
+  largest: number;
+} {
+  const values = Object.values(sessionCalls).sort((a, b) => a - b);
+  if (values.length === 0) return { count: 0, median: 0, largest: 0 };
+  return {
+    count: values.length,
+    median: values[Math.floor(values.length / 2)]!,
+    largest: values[values.length - 1]!,
+  };
+}

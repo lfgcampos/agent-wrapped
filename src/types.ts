@@ -1,6 +1,10 @@
 /** One transcript file on disk, already classified. */
 export interface TranscriptFile {
   path: string;
+  /** Bytes on disk — feeds the size-aware retention advice. */
+  size: number;
+  /** Last-write time in ms. Used to skip files entirely under --since. */
+  mtime: number;
   /** Grouping key only — never rendered. */
   project: string;
   /** True when the file lives under a `subagents/` directory. */
@@ -46,6 +50,8 @@ export interface Stats {
   repoCount: number;
   /** Tokens written in the top three projects / all tokens written. */
   topThreeShare: number;
+  /** Tokens written in the single busiest project / all tokens written. */
+  topRepoShare: number;
   /** Tokens written inside any skill / all tokens written. */
   skillAttributedShare: number;
   distinctSkills: number;
@@ -57,8 +63,86 @@ export interface Stats {
 export interface Retention {
   /** Days between first and last record, inclusive. */
   windowDays: number;
+  /** Total bytes of transcripts on disk. */
+  bytesOnDisk: number;
+  /** Average bytes written per active day. */
+  bytesPerDay: number;
+  /** Retention horizon that fits the disk budget, in days. */
+  suggestedDays: number;
+  /** Projected disk cost of `suggestedDays`, in bytes. */
+  suggestedBytes: number;
+  /** Projected disk cost of keeping a full year, in bytes. */
+  yearBytes: number;
   /** From ~/.claude/settings.json, null when unset. */
   cleanupPeriodDays: number | null;
   /** True when history is being silently deleted. */
   atRisk: boolean;
+}
+
+/** One time the user hit a usage wall. Deduplicated by day + reset time. */
+export interface LimitEvent {
+  day: string;
+  /** As written by Claude Code — "session" is the only kind seen so far. */
+  kind: string;
+  resets: string;
+}
+
+/**
+ * Everything that is not token usage: tool calls, turns, sessions, walls hit.
+ * Collected in the same single pass over the transcripts.
+ */
+export interface Signals {
+  toolCounts: Record<string, number>;
+  userMessages: number;
+  limitEvents: LimitEvent[];
+  overloads: number;
+  /** session id -> assistant call count */
+  sessionCalls: Record<string, number>;
+}
+
+export interface Rhythm {
+  /** 24 buckets, local hours. */
+  hours: number[];
+  peakHour: number;
+  /** Share of tokens written on Saturday or Sunday, 0..1. */
+  weekendShare: number;
+  currentStreak: number;
+  longestStreak: number;
+}
+
+export interface ToolShare {
+  tool: string;
+  calls: number;
+  share: number;
+}
+
+/** A tiny, durable summary of one run — kilobytes, so years of them cost nothing. */
+export interface Snapshot {
+  version: 1;
+  takenAt: string;
+  firstDay: string;
+  lastDay: string;
+  activeDays: number;
+  calls: number;
+  written: number;
+  readWriteRatio: number;
+  cacheShare: number;
+  subagentCallShare: number;
+  currentStreak: number;
+  longestStreak: number;
+  weekendShare: number;
+  peakHour: number;
+  humanTurns: number;
+  limitEvents: number;
+  overloads: number;
+  sessions: number;
+  topSkill: string | null;
+  topTool: string | null;
+  toolCounts: Record<string, number>;
+}
+
+export interface Delta {
+  previous: Snapshot;
+  /** Days of history missing between the two snapshots, 0 when continuous. */
+  gapDays: number;
 }
