@@ -65,10 +65,14 @@ test('repo concentration uses the top three projects and counts the rest', () =>
 });
 
 test('active days counts distinct calendar days, not the span between them', () => {
+  // Local times, no trailing Z: days are computed in the viewer's timezone, so a
+  // UTC instant can legitimately fall on a different local day (18:00Z on Jul 16
+  // is Jul 17 in Auckland). Asserting on UTC instants would test the timezone,
+  // not the aggregation.
   const s = computeStats([
-    rec({ ts: '2026-07-16T10:00:00.000Z' }),
-    rec({ ts: '2026-07-16T18:00:00.000Z' }),
-    rec({ ts: '2026-08-24T09:00:00.000Z' }),
+    rec({ ts: '2026-07-16T10:00:00.000' }),
+    rec({ ts: '2026-07-16T18:00:00.000' }),
+    rec({ ts: '2026-08-24T09:00:00.000' }),
   ]);
   assert.equal(s.activeDays, 2);
   assert.equal(s.firstDay, '2026-07-16');

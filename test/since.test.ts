@@ -4,14 +4,29 @@ import { parseSince } from '../src/since.js';
 
 const now = new Date('2026-08-25T12:00:00');
 
+/**
+ * Assert the contract — how far back the cutoff is — rather than how the result
+ * renders in UTC. Rendering a locally-constructed date through toISOString()
+ * shifts the day for anyone far enough from Greenwich (UTC+14 was the tell).
+ */
+const daysBack = (value: string) => Math.round((now.getTime() - parseSince(value, now)!.getTime()) / 86_400_000);
+
 test('parses day, week and month windows', () => {
-  assert.equal(parseSince('30d', now)!.toISOString().slice(0, 10), '2026-07-26');
-  assert.equal(parseSince('2w', now)!.toISOString().slice(0, 10), '2026-08-11');
-  assert.equal(parseSince('6m', now)!.toISOString().slice(0, 10), '2026-02-26');
+  assert.equal(daysBack('30d'), 30);
+  assert.equal(daysBack('2w'), 14);
+  assert.equal(daysBack('6m'), 180);
 });
 
-test('parses an absolute date', () => {
-  assert.equal(parseSince('2026-08-01', now)!.getFullYear(), 2026);
+test('is not confused by spacing or case', () => {
+  assert.equal(daysBack('7D'), 7);
+  assert.equal(daysBack(' 7 d '), 7);
+});
+
+test('parses an absolute date in the local calendar', () => {
+  const d = parseSince('2026-08-01', now)!;
+  assert.equal(d.getFullYear(), 2026);
+  assert.equal(d.getMonth(), 7); // August
+  assert.equal(d.getDate(), 1);
 });
 
 test('rejects nonsense rather than silently scanning everything', () => {

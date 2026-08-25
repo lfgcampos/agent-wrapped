@@ -152,6 +152,18 @@ the handful of design rules that are deliberate (no network calls, no dependenci
 currency, no personality scoring) so you do not spend effort on a change that gets
 turned down for a reason that was never written down.
 
+## Who made this
+
+Built by **Lucas Campos** — [LinkedIn](https://www.linkedin.com/in/lfgcampos/) ·
+[GitHub](https://github.com/lfgcampos).
+
+I write about engineering leadership and AI-assisted development at
+[lfgcampos.substack.com](https://lfgcampos.substack.com).
+
+Also mine: **[whatkindof.dev](https://whatkindof.dev)** — a developer personality
+test for the AI era. That one asks how you *think* you work; this one reads what
+your logs actually say.
+
 ## Licence
 
 [MIT](LICENSE) © Lucas Campos
