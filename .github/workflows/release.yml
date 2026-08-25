@@ -1,0 +1,75 @@
+name: Release
+
+# Publishing is driven by tags. To cut a release:
+#   npm version patch   (bumps package.json, commits, and tags)
+#   then push the tag
+# The tag is the single source of truth for what gets released.
+on:
+  push:
+    tags: ['v*']
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      # Required for npm trusted publishing (OIDC). No NPM_TOKEN is stored
+      # anywhere — npm mints a short-lived credential scoped to this workflow.
+      id-token: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          registry-url: 'https://registry.npmjs.org'
+          cache: npm
+
+      # OIDC publishing needs a recent npm; the one bundled with Node may lag.
+      - name: Use an npm that supports trusted publishing
+        run: npm install -g npm@latest
+
+      - run: npm ci
+
+      # A tag that disagrees with package.json would publish the wrong version
+      # under the right name, which cannot be undone. Fail before that happens.
+      - name: Verify the tag matches package.json
+        run: |
+          TAG="${GITHUB_REF_NAME#v}"
+          PKG="$(node -p "require('./package.json').version")"
+          echo "tag=$TAG package.json=$PKG"
+          if [ "$TAG" != "$PKG" ]; then
+            echo "::error::Tag $GITHUB_REF_NAME does not match package.json version $PKG"
+            exit 1
+          fi
+
+      # Publishing a version that already exists fails late and wastes the tag.
+      - name: Verify this version is not already published
+        run: |
+          PKG="$(node -p "require('./package.json').version")"
+          if npm view "agent-wrapped@$PKG" version >/dev/null 2>&1; then
+            echo "::error::agent-wrapped@$PKG is already on npm. Bump the version."
+            exit 1
+          fi
+
+      - run: npm test
+      - run: npm run build
+
+      # Smoke-test the built artifact the way a user actually reaches it, rather
+      # than trusting that passing unit tests imply a working binary. A silent
+      # no-op binary shipped once already.
+      - name: Smoke-test the built CLI
+        run: |
+          node dist/cli.js --version
+          node dist/cli.js --help | grep -q -- '--since'
+
+      # No --provenance flag needed: trusted publishing attaches provenance itself.
+      - name: Publish to npm
+        run: npm publish --access public
+
+      - name: Summarise
+        run: |
+          PKG="$(node -p "require('./package.json').version")"
+          echo "Published agent-wrapped@$PKG" >> "$GITHUB_STEP_SUMMARY"
+          echo "https://www.npmjs.com/package/agent-wrapped/v/$PKG" >> "$GITHUB_STEP_SUMMARY"

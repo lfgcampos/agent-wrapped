@@ -145,6 +145,12 @@ Node 22 or newer. Tested on Node 22, 24 and 26, on Linux, macOS and Windows, and
 across four timezones — day boundaries are computed locally, and that is easy to get
 wrong.
 
+## Releasing
+
+Tag-driven and automated — see [CONTRIBUTING.md](CONTRIBUTING.md#releasing).
+Published with npm trusted publishing (OIDC), so every release carries a
+provenance attestation and no long-lived token exists to leak.
+
 ## Contributing
 
 Pull requests welcome. Please read [CONTRIBUTING.md](CONTRIBUTING.md) first — it lists

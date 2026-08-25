@@ -58,6 +58,37 @@ Tests are `node:test` with no framework. Two things worth knowing:
   hid two skill bars rendering identically. Run against your own `~/.claude` and
   look at the output before opening a pull request.
 
+## Releasing
+
+Releases are tag-driven and fully automated. There is **no npm token anywhere** —
+publishing uses npm trusted publishing (OIDC), so GitHub Actions mints a
+short-lived credential scoped to the release workflow, and npm attaches a
+provenance attestation automatically.
+
+To cut a release, bump the version and push the tag:
+
+```sh
+npm version patch     # or minor / major — bumps package.json, commits, tags
+git push --follow-tags
+```
+
+Pushing the tag triggers `.github/workflows/release.yml`, which refuses to
+publish unless:
+
+- the tag matches the `package.json` version exactly,
+- that version is not already on npm,
+- the full test suite passes,
+- the build succeeds, and
+- the built binary answers `--version` and `--help`.
+
+That last check exists because a released binary was once a silent no-op while
+every unit test passed.
+
+**First-time setup**, recorded here so it is not folklore: the very first version
+had to be published by hand, because a trusted publisher is configured against a
+package that already exists. Once it did, the trusted publisher was registered on
+npmjs.com against this repository and the `release.yml` workflow.
+
 ## Pull requests
 
 Keep them focused, include a test, and say what you *considered and rejected* —
