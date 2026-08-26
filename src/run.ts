@@ -1,7 +1,7 @@
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 import { readFileSync } from 'node:fs';
-import { writeFile } from 'node:fs/promises';
-import { tmpdir } from 'node:os';
+import { mkdir, writeFile } from 'node:fs/promises';
+import { cardPath, openCommand } from './paths.js';
 import { discover } from './discover.js';
 import { parseAll } from './parse.js';
 import { computeStats } from './stats.js';
@@ -26,7 +26,7 @@ Usage
 Options
   --since <window>   Limit to a window: 30d, 12w, 6m, or a date like 2026-08-01.
                      Faster than a full run — older transcripts are never opened.
-  --html             Write a self-contained HTML page and print its path.
+  --html             Write a self-contained page to ~/.agent-wrapped/card.html.
   --json             Print the raw stats as JSON.
   --no-save          Do not write a snapshot for this run.
   --version, -v      Print the version.
@@ -118,9 +118,10 @@ export async function run(argv: string[], home: string): Promise<string> {
   }
 
   if (argv.includes('--html')) {
-    const out = join(tmpdir(), 'agent-wrapped.html');
-    await writeFile(out, renderHtml(stats, retention, rhythm, signals), "utf8");
-    return `Wrote ${out}\nOpen it with:  open ${out}`;
+    const out = cardPath(home);
+    await mkdir(dirname(out), { recursive: true });
+    await writeFile(out, renderHtml(stats, retention, rhythm, signals), 'utf8');
+    return `Wrote ${out}\nOpen it with:  ${openCommand()} ${out}`;
   }
 
   if (argv.includes('--json')) {

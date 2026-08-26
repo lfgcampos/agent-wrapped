@@ -1,19 +1,11 @@
 import { mkdir, readdir, readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
+import { snapshotDir } from './paths.js';
 import type { Delta, Rhythm, Signals, Snapshot, Stats } from './types.js';
 import { sessionStats, toolShares } from './rhythm.js';
 import { localDay } from './stats.js';
 
-/**
- * Snapshots live in the tool's OWN directory, never under ~/.claude.
- *
- * Claude Code prunes its own directory on a retention schedule, so storing the
- * history there would let the very cleanup we warn about delete the record we
- * are keeping to survive it.
- */
-export function snapshotDir(home: string): string {
-  return join(home, '.agent-wrapped', 'snapshots');
-}
+export { snapshotDir };
 
 export function buildSnapshot(
   stats: Stats,

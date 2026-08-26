@@ -40,7 +40,7 @@ global install you just run that.
     14   times the server was overloaded on you
 ```
 
-Add `--html` for a self-contained page you can save or screenshot.
+Add `--html` for a self-contained page at `~/.agent-wrapped/card.html`, ready to open or screenshot.
 
 ## Nothing leaves your machine
 
@@ -60,7 +60,7 @@ so a screenshot is safe to post.
 ```sh
 npx @lfgcampos/agent-wrapped                 # terminal card, all available history
 npx @lfgcampos/agent-wrapped --since 30d     # window: 30d, 12w, 6m, or 2026-08-01
-npx @lfgcampos/agent-wrapped --html          # self-contained page, prints its path
+npx @lfgcampos/agent-wrapped --html          # writes ~/.agent-wrapped/card.html
 npx @lfgcampos/agent-wrapped --json          # raw stats, for your own charts
 npx @lfgcampos/agent-wrapped --no-save       # skip writing a snapshot
 npx @lfgcampos/agent-wrapped --help

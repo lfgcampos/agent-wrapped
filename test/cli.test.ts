@@ -44,3 +44,12 @@ test('reports a clear message when there are no transcripts', async () => {
   const out = await run([], empty);
   assert.match(out, /No Claude Code transcripts found/);
 });
+
+test('--html writes into the tool directory under the given home', async () => {
+  // The fixture home lives in a temp dir, so "not in a temp path" is untestable
+  // here. The real contract is that the card lands under THIS home's data dir.
+  const root = await home();
+  const out = await run(['--html'], root);
+  assert.ok(out.includes(join(root, '.agent-wrapped', 'card.html')), out);
+  assert.doesNotMatch(out, /agent-wrapped\.html/, 'the old flat temp filename is gone');
+});
