@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="agent-wrapped">
+  <!-- The read:write ratio as a mark: a column of context read, a sliver written. -->
+  <rect x="5"  y="3"  width="9" height="26" rx="1.5" fill="#ea580c"/>
+  <rect x="18" y="26" width="9" height="3"  rx="1.5" fill="#ea580c"/>
+</svg>
