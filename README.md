@@ -3,7 +3,8 @@
 **A wrapped card for how you actually work with Claude Code** — read from your own
 transcripts, rendered on your own machine, sent nowhere.
 
-**[agent-wrapped.dev](https://agent-wrapped.dev)**
+**[agent-wrapped.dev](https://agent-wrapped.dev)** ·
+**[Changelog](https://github.com/lfgcampos/agent-wrapped/releases)**
 
 ```sh
 npx @lfgcampos/agent-wrapped
@@ -154,7 +155,10 @@ wrong.
 
 ## Releasing
 
-Tag-driven and automated — see [CONTRIBUTING.md](CONTRIBUTING.md#releasing).
+Every version's notes are on the
+[releases page](https://github.com/lfgcampos/agent-wrapped/releases), generated
+from [CHANGELOG.md](CHANGELOG.md). Releases are tag-driven and automated — see
+[CONTRIBUTING.md](CONTRIBUTING.md#releasing).
 Published with npm trusted publishing (OIDC), so every release carries a
 provenance attestation and no long-lived token exists to leak.
 
