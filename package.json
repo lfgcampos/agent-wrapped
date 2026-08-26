@@ -4,7 +4,7 @@
     "typescript": "^7.0.2"
   },
   "name": "@lfgcampos/agent-wrapped",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "type": "module",
   "license": "MIT",
   "description": "Local-first wrapped card for your Claude Code usage. Nothing leaves your machine.",
