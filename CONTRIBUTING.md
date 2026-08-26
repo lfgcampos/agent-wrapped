@@ -65,7 +65,13 @@ publishing uses npm trusted publishing (OIDC), so GitHub Actions mints a
 short-lived credential scoped to the release workflow, and npm attaches a
 provenance attestation automatically.
 
-To cut a release, bump the version and push the tag:
+**Write the release notes first.** Add a `## [x.y.z]` section to `CHANGELOG.md`
+describing the change in terms of what it means for someone using the tool, not
+what the commits did. The workflow reads that section as the GitHub release body
+and **fails before publishing** if it is missing or empty — npm versions cannot be
+un-published, so anything that can be checked early is checked early.
+
+Then bump the version and push the tag:
 
 ```sh
 npm version patch     # or minor / major — bumps package.json, commits, tags
@@ -76,6 +82,7 @@ Pushing the tag triggers `.github/workflows/release.yml`, which refuses to
 publish unless:
 
 - the tag matches the `package.json` version exactly,
+- `CHANGELOG.md` has a non-empty section for that version,
 - that version is not already on npm,
 - the full test suite passes,
 - the build succeeds, and
@@ -83,6 +90,9 @@ publish unless:
 
 That last check exists because a released binary was once a silent no-op while
 every unit test passed.
+
+On success it publishes to npm and creates the GitHub release from your
+CHANGELOG section.
 
 **First-time setup**, recorded here so it is not folklore: the very first version
 had to be published by hand, because a trusted publisher is configured against a
