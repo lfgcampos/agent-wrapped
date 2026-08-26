@@ -64,7 +64,7 @@
     color: var(--faint); border-bottom: 1px solid var(--rule);
     padding-bottom: .6rem; margin-bottom: 2.5rem;
   }
-  .manline span:nth-child(2) { color: var(--dim); }
+  .manline .lead, .footrule .lead { color: var(--dim); }
 
   h2 {
     font-size: 12px; letter-spacing: .18em; text-transform: uppercase;
@@ -131,14 +131,13 @@
   }
   @media (max-width: 30rem) {
     .manline, .footrule { flex-direction: column; gap: .1rem; }
-    .manline span:nth-child(2), .footrule span:nth-child(2) { order: -1; }
   }
 </style>
 </head>
 <body>
 <main>
 
-  <div class="manline"><span>agent-wrapped(1)</span><span>User Commands</span><span>agent-wrapped(1)</span></div>
+  <div class="manline"><span class="lead">agent-wrapped(1)</span><span>User Commands</span></div>
 
   <h2>Name</h2>
   <p class="name indent">agent-wrapped</p>
@@ -229,6 +228,7 @@
   <ul>
     <li><a href="https://github.com/lfgcampos/agent-wrapped">github.com/lfgcampos/agent-wrapped</a> — source, issues</li>
     <li><a href="https://www.npmjs.com/package/@lfgcampos/agent-wrapped">npmjs.com/package/@lfgcampos/agent-wrapped</a></li>
+    <li><a href="https://github.com/lfgcampos/agent-wrapped/releases">Changelog</a> — what changed in each version</li>
     <li><a href="https://whatkindof.dev">whatkindof.dev</a> — asks how you <em>think</em> you work; this reads what your logs say</li>
   </ul>
 
@@ -238,7 +238,7 @@
      <a href="https://www.linkedin.com/in/lfgcampos/">LinkedIn</a> ·
      <a href="https://github.com/lfgcampos">GitHub</a></p>
 
-  <div class="footrule"><span>agent-wrapped 0.1.0</span><span>MIT</span><span>agent-wrapped(1)</span></div>
+  <div class="footrule"><span class="lead">MIT licence</span><span>agent-wrapped.dev</span></div>
 
 </main>
 <script>
