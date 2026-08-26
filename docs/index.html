@@ -65,6 +65,12 @@
     padding-bottom: .6rem; margin-bottom: 2.5rem;
   }
   .manline .lead, .footrule .lead { color: var(--dim); }
+  /* Brand marks inherit currentColor, so they theme with the page and need no
+     asset request. Nominative use: they identify where the link goes. */
+  .marks { display:flex; align-items:center; gap:.85rem; }
+  .marks a { display:inline-flex; color:var(--faint); transition:color .12s; }
+  .marks a:hover { color:var(--accent); }
+  .marks svg { width:16px; height:16px; fill:currentColor; display:block; }
 
   h2 {
     font-size: 12px; letter-spacing: .18em; text-transform: uppercase;
@@ -130,14 +136,15 @@
     padding-top: .6rem; margin-top: 3.5rem;
   }
   @media (max-width: 30rem) {
-    .manline, .footrule { flex-direction: column; gap: .1rem; }
+    .manline, .footrule { flex-direction: column; align-items: flex-start; gap: .35rem; }
+    .marks { gap: 1rem; }
   }
 </style>
 </head>
 <body>
 <main>
 
-  <div class="manline"><span class="lead">agent-wrapped(1)</span><span>User Commands</span></div>
+  <div class="manline"><span class="lead">agent-wrapped(1)</span><span>User Commands</span><span class="marks"><a href="https://github.com/lfgcampos/agent-wrapped" aria-label="Source on GitHub"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg></a><a href="https://www.npmjs.com/package/@lfgcampos/agent-wrapped" aria-label="Package on npm"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M1.763 0C.786 0 0 .786 0 1.763v20.474C0 23.214.786 24 1.763 24h20.474c.977 0 1.763-.786 1.763-1.763V1.763C24 .786 23.214 0 22.237 0zM5.13 5.323l13.837.019-.009 13.836h-3.464l.01-10.382h-3.456L12.04 19.17H5.113z"/></svg></a></span></div>
 
   <h2>Name</h2>
   <p class="name indent">agent-wrapped</p>
@@ -226,8 +233,8 @@
 
   <h2>See also</h2>
   <ul>
-    <li><a href="https://github.com/lfgcampos/agent-wrapped">github.com/lfgcampos/agent-wrapped</a> — source, issues</li>
-    <li><a href="https://www.npmjs.com/package/@lfgcampos/agent-wrapped">npmjs.com/package/@lfgcampos/agent-wrapped</a></li>
+    <li><a href="https://github.com/lfgcampos/agent-wrapped">Source and issues</a> — on GitHub</li>
+    <li><a href="https://www.npmjs.com/package/@lfgcampos/agent-wrapped">The package</a> — on npm</li>
     <li><a href="https://github.com/lfgcampos/agent-wrapped/releases">Changelog</a> — what changed in each version</li>
     <li><a href="https://whatkindof.dev">whatkindof.dev</a> — asks how you <em>think</em> you work; this reads what your logs say</li>
   </ul>
