@@ -27,6 +27,7 @@ Options
   --since <window>   Limit to a window: 30d, 12w, 6m, or a date like 2026-08-01.
                      Faster than a full run — older transcripts are never opened.
   --html             Write a self-contained page to ~/.agent-wrapped/card.html.
+                     It has a Save-as-image button for a shareable PNG.
   --json             Print the raw stats as JSON.
   --no-save          Do not write a snapshot for this run.
   --version, -v      Print the version.

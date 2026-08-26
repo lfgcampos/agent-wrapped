@@ -40,7 +40,9 @@ global install you just run that.
     14   times the server was overloaded on you
 ```
 
-Add `--html` for a self-contained page at `~/.agent-wrapped/card.html`, ready to open or screenshot.
+Add `--html` for a self-contained page at `~/.agent-wrapped/card.html`. It has a
+**Save as image** button that renders a 1200×630 PNG for sharing — drawn in your
+own browser, never uploaded anywhere.
 
 ## Nothing leaves your machine
 

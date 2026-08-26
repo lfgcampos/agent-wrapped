@@ -34,3 +34,24 @@ test('escapes skill names rather than interpolating them raw', () => {
 test('contains no currency symbol', () => {
   assert.doesNotMatch(renderHtml(stats, retention), /[$€£]/);
 });
+
+test('the share card can be exported without a network call', () => {
+  const html = renderHtml(stats, retention);
+  assert.match(html, /id="sheet"/, 'a canvas is present');
+  assert.match(html, /toBlob/, 'the image is produced in-page');
+  assert.match(html, /createObjectURL/, 'saved via a local object URL');
+  assert.doesNotMatch(html, /fetch\(|XMLHttpRequest|WebSocket|navigator\.sendBeacon/, 'must not send anything');
+});
+
+test('the share payload carries aggregates only — never a project name', () => {
+  const html = renderHtml(stats, retention);
+  const payload = html.match(/const d = (\{.*?\});/s)![1]!;
+  const parsed = JSON.parse(payload);
+  assert.deepEqual(
+    Object.keys(parsed).sort(),
+    ['cache', 'days', 'from', 'ratio', 'subCalls', 'subWords', 'to'].sort(),
+  );
+  for (const v of Object.values(parsed)) {
+    assert.doesNotMatch(String(v), /\/|Users|Projects/, 'no path-like value may cross into the page');
+  }
+});

@@ -20,6 +20,16 @@ export function renderHtml(
   rhythm?: Rhythm,
   signals?: Signals,
 ): string {
+  // Only aggregate numbers cross into the page — never a project name.
+  const shareData = JSON.stringify({
+    ratio: Math.round(stats.readWriteRatio),
+    cache: pct(stats.cacheShare),
+    subCalls: pct(stats.subagentCallShare),
+    subWords: pct(stats.subagentWrittenShare),
+    days: stats.activeDays,
+    from: stats.firstDay,
+    to: stats.lastDay,
+  });
   const spark = rhythm
     ? rhythm.hours
         .map((n) => {
@@ -89,6 +99,11 @@ export function renderHtml(
   td.num { width:3.5rem; text-align:right; padding-right:.75rem; color:var(--dim); }
   .warn { border-left:3px solid var(--accent); padding-left:1rem; color:var(--dim); margin-top:2.5rem; }
   code { background:rgba(128,128,128,.15); padding:.1rem .3rem; border-radius:3px; }
+  #share { font:inherit; font-size:.85rem; cursor:pointer; margin:.5rem 0 0;
+    background:transparent; color:var(--accent); border:1px solid var(--accent);
+    border-radius:4px; padding:.45rem .9rem; }
+  #share:hover { background:var(--accent); color:var(--bg); }
+  #share:focus-visible { outline:2px solid var(--accent); outline-offset:3px; }
   .big { font-size:1.6rem; font-weight:700; margin:.2rem 0; }
   .sub2 { display:block; font-size:.9rem; font-weight:400; color:var(--dim); }
   .spark { display:flex; align-items:flex-end; gap:2px; height:48px; margin:.75rem 0 0; }
@@ -97,6 +112,8 @@ export function renderHtml(
 <body><main>
   <p class="sub">CLAUDE CODE &middot; ${stats.activeDays} ACTIVE DAYS &middot; ${stats.firstDay} &rarr; ${stats.lastDay}</p>
   <p class="ratio">${Math.round(stats.readWriteRatio)} : 1</p>
+  <button type="button" id="share">Save as image</button>
+  <canvas id="sheet" width="1200" height="630" hidden></canvas>
   <p class="sub">tokens read for every token written</p>
   <div class="stat"><b>${pct(stats.cacheShare)}</b><span>of what it read was cache &mdash; the same context, re-sent</span></div>
   <div class="stat"><b>${pct(stats.subagentCallShare)}</b><span>of your calls were subagents&hellip;</span></div>
@@ -114,5 +131,65 @@ export function renderHtml(
   ${turnBlock}
   ${scarBlock}
   ${warning}
-</main></body></html>`;
+</main>
+<script>
+(() => {
+  const d = ${shareData};
+  const MONO = 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace';
+  const button = document.getElementById('share');
+  const canvas = document.getElementById('sheet');
+
+  function draw() {
+    const c = canvas.getContext('2d');
+    c.fillStyle = '#0c0a09';
+    c.fillRect(0, 0, 1200, 630);
+
+    // The mark: the ratio itself — a column read, a sliver written.
+    c.fillStyle = '#fb923c';
+    c.fillRect(72, 52, 15, 44);
+    c.fillRect(96, 90, 15, 6);
+    c.font = '700 34px ' + MONO;
+    c.fillStyle = '#e7e5e4';
+    c.fillText('agent-wrapped', 130, 88);
+
+    c.fillStyle = '#fb923c';
+    c.font = '700 190px ' + MONO;
+    c.fillText(d.ratio + ' : 1', 68, 330);
+
+    c.fillStyle = '#a8a29e';
+    c.font = '36px ' + MONO;
+    c.fillText('tokens read for every token written', 72, 388);
+
+    c.font = '26px ' + MONO;
+    c.fillStyle = '#78716c';
+    const facts = [
+      d.cache + ' of it was cache',
+      d.subCalls + ' of calls were subagents, ' + d.subWords + ' of the words',
+      d.days + ' active days  ·  ' + d.from + ' to ' + d.to,
+    ];
+    facts.forEach((line, i) => c.fillText(line, 72, 452 + i * 38));
+
+    c.fillStyle = '#57534e';
+    c.font = '24px ' + MONO;
+    c.fillText('agent-wrapped.dev', 72, 588);
+  }
+
+  button.addEventListener('click', () => {
+    draw();
+    canvas.toBlob((blob) => {
+      if (!blob) { button.textContent = 'Could not render'; return; }
+      // A local object URL — the image is never sent anywhere.
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'agent-wrapped.png';
+      link.click();
+      URL.revokeObjectURL(url);
+      button.textContent = 'Saved';
+      setTimeout(() => { button.textContent = 'Save as image'; }, 1800);
+    }, 'image/png');
+  });
+})();
+</script>
+</body></html>`;
 }
