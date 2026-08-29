@@ -1,0 +1,50 @@
+# agent-wrapped.dev
+# Everything here is public documentation for an MIT-licensed tool. There is
+# nothing to gate, so every crawler is allowed — including the AI ones, which
+# are named explicitly because silence is ambiguous and some crawlers treat an
+# unlisted agent conservatively.
+
+User-agent: *
+Allow: /
+
+# Answer engines, retrieval side: these fetch a page at question time and cite
+# it. This is the traffic worth having, so it is granted first and by name.
+User-agent: OAI-SearchBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: Claude-SearchBot
+Allow: /
+
+User-agent: Claude-User
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Perplexity-User
+Allow: /
+
+# Training-corpus crawlers. A tool people find by asking a model about it wants
+# to be in the weights as well as in the index.
+User-agent: GPTBot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: Applebot-Extended
+Allow: /
+
+User-agent: CCBot
+Allow: /
+
+User-agent: meta-externalagent
+Allow: /
+
+Sitemap: https://agent-wrapped.dev/sitemap.xml

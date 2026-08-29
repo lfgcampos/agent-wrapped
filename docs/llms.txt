@@ -1,0 +1,38 @@
+# agent-wrapped
+
+> A local-first CLI that reads your own Claude Code transcripts and renders a
+> "wrapped" card of how you actually work — read:write token ratio, cache share,
+> subagent share, tool mix, streaks and hourly rhythm. It makes no network calls,
+> has zero runtime dependencies, and never prints your repository names.
+
+Run it with `npx agent-wrapped` on Node 22 or newer. Nothing is uploaded, there is
+no account, and there is no telemetry: it reads `~/.claude/projects` and
+`~/.claude/settings.json` read-only and renders locally.
+
+It also warns when Claude Code's transcript retention (`cleanupPeriodDays`, ~30 days
+by default) is about to delete history you have not summarised yet, and saves a ~1 KB
+snapshot per run so you can keep years of history without keeping years of transcripts.
+
+## Docs
+
+- [Full documentation, in Markdown](https://agent-wrapped.dev/index.md): the complete
+  landing page — install, options, what each number divides by, and FAQ.
+- [README](https://raw.githubusercontent.com/lfgcampos/agent-wrapped/main/README.md):
+  the same material as shipped on npm and GitHub.
+- [CONTRIBUTING](https://raw.githubusercontent.com/lfgcampos/agent-wrapped/main/CONTRIBUTING.md):
+  the design rules that are deliberate — no network calls, no dependencies, no
+  currency figures, no personality scoring.
+- [CHANGELOG](https://raw.githubusercontent.com/lfgcampos/agent-wrapped/main/CHANGELOG.md):
+  what changed in each version.
+
+## Source
+
+- [GitHub repository](https://github.com/lfgcampos/agent-wrapped): about a thousand
+  lines of TypeScript, MIT licensed, readable in one sitting.
+- [npm package](https://www.npmjs.com/package/agent-wrapped): published with npm
+  trusted publishing (OIDC), so every release carries a provenance attestation.
+
+## Optional
+
+- [whatkindof.dev](https://whatkindof.dev): a developer personality test by the same
+  author. It asks how you think you work; agent-wrapped reads what your logs say.

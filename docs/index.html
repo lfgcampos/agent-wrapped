@@ -17,6 +17,101 @@
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="agent-wrapped: 394 tokens read for every token written.">
 <meta name="twitter:card" content="summary_large_image">
+<meta name="author" content="Lucas Campos">
+<link rel="alternate" type="text/markdown" href="https://agent-wrapped.dev/index.md" title="agent-wrapped, in Markdown">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "SoftwareApplication",
+      "@id": "https://agent-wrapped.dev/#software",
+      "name": "agent-wrapped",
+      "alternateName": "Claude Code Wrapped",
+      "applicationCategory": "DeveloperApplication",
+      "applicationSubCategory": "Command Line Tool",
+      "operatingSystem": "Linux, macOS, Windows",
+      "description": "A local-first CLI that reads your own Claude Code transcripts and renders a wrapped card of how you work — read:write token ratio, cache share, subagent share, tool mix, streaks and hourly rhythm. No network calls, no dependencies, nothing leaves your machine.",
+      "url": "https://agent-wrapped.dev/",
+      "downloadUrl": "https://www.npmjs.com/package/agent-wrapped",
+      "installUrl": "https://www.npmjs.com/package/agent-wrapped",
+      "codeRepository": "https://github.com/lfgcampos/agent-wrapped",
+      "programmingLanguage": "TypeScript",
+      "softwareRequirements": "Node.js 22 or newer",
+      "license": "https://opensource.org/licenses/MIT",
+      "isAccessibleForFree": true,
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "author": {
+        "@type": "Person",
+        "name": "Lucas Campos",
+        "url": "https://github.com/lfgcampos",
+        "sameAs": [
+          "https://www.linkedin.com/in/lfgcampos/",
+          "https://lfgcampos.substack.com"
+        ]
+      }
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://agent-wrapped.dev/#faq",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "How do I see my Claude Code usage statistics?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Run npx agent-wrapped in a terminal. It reads the transcripts Claude Code already keeps on your machine and prints a summary card: token read:write ratio, cache share, subagent share, tool mix, session counts, streaks and your hourly rhythm. Nothing is uploaded and no model is called, so it returns in seconds."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Where does Claude Code store its transcripts and conversation history?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "In ~/.claude/projects, as JSONL files — one directory per project, one file per session. Your settings, including retention, live in ~/.claude/settings.json. Those are the only two paths agent-wrapped reads, both read-only."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How long does Claude Code keep transcripts?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "About 30 days by default, after which older transcripts are deleted. The setting is cleanupPeriodDays in ~/.claude/settings.json. Most people therefore have a month of history rather than a year, which is why agent-wrapped warns you before that window closes on data you have not summarised yet. Raising it is a disk decision: a heavy user writes roughly 25 MB a day, so a full year is around 9 GB."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Does agent-wrapped send my data anywhere?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "No. There are no network calls at all — no server, no account, no analytics, no version check — and zero runtime dependencies, so there is no third-party code in the package. Your repository names are never rendered, never logged and never written to --json, so a screenshot of the card is safe to post."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How is this different from Claude Code's /insights?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "They answer different questions. /insights asks a model to write a narrative about what it was like working with Claude — friction, satisfaction, interruptions. It costs tokens and takes time. agent-wrapped answers what does my usage look like as a number, deterministically and instantly, with no model call, in a form you can share."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Does it work with Cursor, Codex, or other coding agents?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Not yet. It reads Claude Code's transcript format specifically. Support for other agents is a reasonable feature request — open an issue on GitHub."
+          }
+        }
+      ]
+    }
+  ]
+}
+</script>
 <meta name="theme-color" content="#c2410c" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0c0a09" media="(prefers-color-scheme: dark)">
 <style>
@@ -78,6 +173,13 @@
     margin: 3rem 0 .9rem;
   }
   h2:first-of-type { margin-top: 0; }
+
+  /* A question reads as a question: sentence case, not the uppercase section
+     rule. Accent colour keeps it in the same family as dt. */
+  h3 {
+    font-size: 15px; font-weight: 700; color: var(--accent);
+    margin: 2rem 0 .5rem; max-width: 68ch;
+  }
 
   p { margin: 0 0 1rem; max-width: 68ch; }
   .indent { padding-left: 2ch; }
@@ -144,7 +246,7 @@
 <body>
 <main>
 
-  <div class="manline"><span class="lead">agent-wrapped(1)</span><span>User Commands</span><span class="marks"><a href="https://github.com/lfgcampos/agent-wrapped" aria-label="Source on GitHub"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg></a><a href="https://www.npmjs.com/package/@lfgcampos/agent-wrapped" aria-label="Package on npm"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M1.763 0C.786 0 0 .786 0 1.763v20.474C0 23.214.786 24 1.763 24h20.474c.977 0 1.763-.786 1.763-1.763V1.763C24 .786 23.214 0 22.237 0zM5.13 5.323l13.837.019-.009 13.836h-3.464l.01-10.382h-3.456L12.04 19.17H5.113z"/></svg></a></span></div>
+  <div class="manline"><span class="lead">agent-wrapped(1)</span><span>User Commands</span><span class="marks"><a href="https://github.com/lfgcampos/agent-wrapped" aria-label="Source on GitHub"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg></a><a href="https://www.npmjs.com/package/agent-wrapped" aria-label="Package on npm"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M1.763 0C.786 0 0 .786 0 1.763v20.474C0 23.214.786 24 1.763 24h20.474c.977 0 1.763-.786 1.763-1.763V1.763C24 .786 23.214 0 22.237 0zM5.13 5.323l13.837.019-.009 13.836h-3.464l.01-10.382h-3.456L12.04 19.17H5.113z"/></svg></a></span></div>
 
   <h2>Name</h2>
   <p class="name indent">agent-wrapped</p>
@@ -152,7 +254,7 @@
 
   <h2>Synopsis</h2>
   <div class="cmd">
-    <code id="cmd">npx @lfgcampos/agent-wrapped</code>
+    <code id="cmd">npx agent-wrapped</code>
     <button type="button" id="copy" aria-label="Copy the install command">Copy</button>
   </div>
   <p class="indent"><span style="color:var(--faint)">Node 22+. No install, no account, no config.</span></p>
@@ -184,6 +286,8 @@
   BATTLE SCARS
      <b>4</b>   times you hit the usage limit, across 3 weeks
     <b>14</b>   times the server was overloaded on you
+
+  <span class="dim">npx agent-wrapped · agent-wrapped.dev</span>
 </pre>
 
   <h2>Privacy</h2>
@@ -231,11 +335,55 @@
   <p>Each full run saves a ~1&nbsp;KB snapshot and compares against the last one, so
      you can keep a year of history without keeping a year of transcripts.</p>
 
+  <h2>Questions</h2>
+
+  <h3>How do I see my Claude Code usage statistics?</h3>
+  <p>Run <code>npx agent-wrapped</code> in a terminal. It reads the transcripts Claude
+     Code already keeps on your machine and prints a summary card: token read:write
+     ratio, cache share, subagent share, tool mix, session counts, streaks and your
+     hourly rhythm. Nothing is uploaded and no model is called, so it returns in
+     seconds.</p>
+
+  <h3>Where does Claude Code store its transcripts and conversation history?</h3>
+  <p>In <code>~/.claude/projects</code>, as JSONL files — one directory per project,
+     one file per session. Your settings, including retention, live in
+     <code>~/.claude/settings.json</code>. Those are the only two paths agent-wrapped
+     reads, both read-only.</p>
+
+  <h3>How long does Claude Code keep transcripts?</h3>
+  <p>About 30 days by default, after which older transcripts are deleted. The setting
+     is <code>cleanupPeriodDays</code> in <code>~/.claude/settings.json</code>. Most
+     people therefore have a month of history rather than a year, which is why
+     agent-wrapped warns you before that window closes on data you have not summarised
+     yet. Raising it is a disk decision: a heavy user writes roughly 25&nbsp;MB a day,
+     so a full year is around 9&nbsp;GB.</p>
+
+  <h3>Does agent-wrapped send my data anywhere?</h3>
+  <p>No. There are no network calls at all — no server, no account, no analytics, no
+     version check — and zero runtime dependencies, so there is no third-party code in
+     the package. Your repository names are never rendered, never logged and never
+     written to <code>--json</code>, so a screenshot of the card is safe to post.</p>
+
+  <h3>How is this different from Claude Code&rsquo;s <code>/insights</code>?</h3>
+  <p>They answer different questions. <code>/insights</code> asks a model to write a
+     narrative about what it was <em>like</em> working with Claude — friction,
+     satisfaction, interruptions. It costs tokens and takes time. agent-wrapped answers
+     <em>what does my usage look like as a number</em>, deterministically and instantly,
+     with no model call, in a form you can share.</p>
+
+  <h3>Does it work with Cursor, Codex, or other coding agents?</h3>
+  <p>Not yet. It reads Claude Code&rsquo;s transcript format specifically. Support for
+     other agents is a reasonable feature request —
+     <a href="https://github.com/lfgcampos/agent-wrapped/issues">open an issue</a> on
+     GitHub.</p>
+
   <h2>See also</h2>
   <ul>
     <li><a href="https://github.com/lfgcampos/agent-wrapped">Source and issues</a> — on GitHub</li>
-    <li><a href="https://www.npmjs.com/package/@lfgcampos/agent-wrapped">The package</a> — on npm</li>
+    <li><a href="https://www.npmjs.com/package/agent-wrapped">The package</a> — on npm</li>
     <li><a href="https://github.com/lfgcampos/agent-wrapped/releases">Changelog</a> — what changed in each version</li>
+    <li><a href="/index.md">This page in Markdown</a> — plain text, for agents and scripts</li>
+    <li><a href="/llms.txt">llms.txt</a> — a machine-readable index of everything above</li>
     <li><a href="https://whatkindof.dev">whatkindof.dev</a> — asks how you <em>think</em> you work; this reads what your logs say</li>
   </ul>
 

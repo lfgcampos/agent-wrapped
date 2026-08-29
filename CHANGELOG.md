@@ -9,6 +9,33 @@ GitHub release body and refuses to publish without one.
 
 ## [Unreleased]
 
+## [0.2.0]
+
+### Changed
+
+- **The package is now `agent-wrapped`, not `@lfgcampos/agent-wrapped`.** Install
+  it with `npx agent-wrapped` — the command, the package, the repository and
+  agent-wrapped.dev finally all say the same thing. The scoped package stays on
+  npm so existing installs keep resolving, but it is deprecated and will not
+  receive further releases; switch the name to keep getting updates. Nothing about
+  the tool's behaviour, output or privacy properties changed with it.
+
+### Added
+
+- **The terminal card carries its own name.** One line at the foot of the card
+  reads `npx agent-wrapped · agent-wrapped.dev`. A screenshot loses every link
+  around it, and that line is what tells the next reader what they are looking at.
+  It is a printed string, not a network call — the no-telemetry rule is unchanged.
+- **Machine-readable documentation.** agent-wrapped.dev now serves `/index.md`
+  (the whole page as Markdown), `/llms.txt`, `/robots.txt` and `/sitemap.xml`, and
+  the page carries `SoftwareApplication` and `FAQPage` structured data. An agent
+  asked about Claude Code usage statistics can fetch plain text instead of
+  scraping 13 KB of inline CSS.
+- **A questions section** on agent-wrapped.dev, answering where Claude Code keeps
+  its transcripts, how long it keeps them, how to change `cleanupPeriodDays`, and
+  how the card differs from `/insights`.
+
+
 ## [0.1.2]
 
 ### Added
