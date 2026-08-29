@@ -32,8 +32,8 @@ jobs:
       version: ${{ steps.check.outputs.version }}
       name: ${{ steps.check.outputs.name }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: '24'
           cache: npm
@@ -104,8 +104,8 @@ jobs:
       TAG: v${{ needs.verify.outputs.version }}
 
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: '24'
           registry-url: 'https://registry.npmjs.org'
