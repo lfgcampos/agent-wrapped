@@ -127,14 +127,20 @@ than anything naming the real cause.
 
 ### Why it is not tag-driven
 
-It used to be, and version 0.1.3 was lost to it: `npm version` bumped
-`package.json` in one commit, the tag was pushed in a step that never happened,
-and the release did not exist until somebody checked npm months later. `npm
-version` is atomic only when releasing from `main` directly; the moment a bump
-travels through a pull request, the bump and the tag are separated by a merge
-and nothing enforces the second half. Deriving the release from `package.json`
-removes the step that can be skipped, and the approval gate puts the deliberate
-human decision back where it belongs — on publishing, not on tag syntax.
+It used to be, and version 0.1.3 was lost to it. `npm version` bumped
+`package.json` and tagged `v0.1.3`, the tag was pushed, and the release run
+failed on the missing CHANGELOG section — correctly, but only after the tag
+existed. The tag was deleted to clean up, and `package.json` was left naming a
+version published nowhere, which is where it stayed until 0.2.0.
+
+Nothing there was careless; the checks fired exactly as designed. The problem
+was *when* they could fire. A tag-driven release cannot validate anything until
+somebody has already tagged, so the cheapest failure — no release notes — costs
+a tag and a manual cleanup instead of a red build on a pull request.
+
+Deriving the release from `package.json` moves every check to a point where
+failing is free, and the approval gate puts the deliberate human decision back
+where it belongs — on publishing, not on tag syntax.
 
 **First-time setup**, recorded here so it is not folklore: the very first version
 had to be published by hand, because a trusted publisher is configured against a

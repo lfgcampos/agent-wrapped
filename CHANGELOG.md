@@ -30,18 +30,27 @@ GitHub release body and refuses to publish without one.
 
 ## 0.1.3 — never released
 
-`package.json` was bumped to 0.1.3, but the tag was never pushed and nothing was
-published: npm went from 0.1.2 straight to 0.2.0. The commit behind the bump
-(37e12bd) changed only release tooling — the CHANGELOG, `release-notes.mjs` and
-the release workflow — and touched nothing under `src/`, so the published
-artefact would have been byte-identical to 0.1.2.
+`package.json` was bumped to 0.1.3 and `v0.1.3` was tagged and pushed, but
+nothing was published: npm went from 0.1.2 straight to 0.2.0.
 
-Recorded rather than quietly renumbered, because the gap is the useful part: a
-version bumped in one commit and tagged in another can be lost between the two.
-Releasing is now driven by the version in `package.json` rather than by a
-hand-pushed tag, so there is no longer a second step to skip, and CI fails any
-change whose version has no notes in this file. Publishing itself waits on an
-approval, so a merge asks rather than ships.
+The release run failed at *Extract release notes from CHANGELOG*, because there
+was no `## [0.1.3]` section for it to find, and every step after it — test,
+build, publish — was skipped. The tag was deleted afterwards, leaving
+`package.json` naming a version that existed nowhere else.
+
+The commit behind the bump (37e12bd) is the same one that introduced this file,
+`release-notes.mjs` and that very check. It changed only release tooling and
+touched nothing under `src/`, so the artefact would have been byte-identical to
+0.1.2 in any case.
+
+Recorded rather than quietly renumbered, because the mechanism is the useful
+part: the gate worked exactly as designed and still cost a stranded version
+number and a deleted tag, purely because it could not run until a tag already
+existed. CI now runs the same check on every pull request, where a missing
+section is a red build instead of a cleanup job, and releasing is driven by the
+version in `package.json` rather than by a hand-pushed tag, so there is no
+longer a second step to skip. Publishing waits on an approval, so a merge asks
+rather than ships.
 
 ## [0.1.2]
 
