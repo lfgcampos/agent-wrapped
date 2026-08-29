@@ -38,9 +38,10 @@ artefact would have been byte-identical to 0.1.2.
 
 Recorded rather than quietly renumbered, because the gap is the useful part: a
 version bumped in one commit and tagged in another can be lost between the two.
-Releasing is now driven by the version in `package.json` on `main` rather than by
-a hand-pushed tag, so there is no longer a second step to skip, and CI fails any
-change whose version has no notes in this file.
+Releasing is now driven by the version in `package.json` rather than by a
+hand-pushed tag, so there is no longer a second step to skip, and CI fails any
+change whose version has no notes in this file. Publishing itself waits on an
+approval, so a merge asks rather than ships.
 
 ## [0.1.2]
 
