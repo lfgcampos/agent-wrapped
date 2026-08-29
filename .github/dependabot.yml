@@ -1,0 +1,40 @@
+# Two ecosystems, both grouped into a single pull request each. This project has
+# two devDependencies and two workflows, so ungrouped updates would produce more
+# review noise than signal.
+version: 2
+updates:
+  # Only devDependencies exist to update: the zero-runtime-dependency rule means
+  # nothing here can ever reach someone who installs the package. A bump that
+  # breaks anything breaks CI, not a user.
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+    groups:
+      dev-dependencies:
+        patterns: ['*']
+    commit-message:
+      # Matches the repository's conventional-commit style.
+      prefix: chore
+      include: scope
+    labels: ['dependencies']
+
+  # The higher-risk half, despite looking like the boring one. A compromised
+  # action runs inside the release workflow, which is the job that holds the
+  # OIDC credential — so these are worth keeping current and worth reviewing
+  # properly rather than merging on sight.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+    groups:
+      actions:
+        patterns: ['*']
+    commit-message:
+      prefix: ci
+      include: scope
+    labels: ['dependencies', 'ci']
