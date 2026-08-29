@@ -60,50 +60,33 @@ Tests are `node:test` with no framework. Two things worth knowing:
 
 ## Releasing
 
-Releases are tag-driven and fully automated. There is **no npm token anywhere** —
-publishing uses npm trusted publishing (OIDC), so GitHub Actions mints a
-short-lived credential scoped to the release workflow, and npm attaches a
-provenance attestation automatically.
+**Merging to `main` releases.** If the `package.json` version on `main` is not
+already on npm, `.github/workflows/release.yml` publishes it, tags the commit and
+writes the GitHub release. If that version is already published — which is every
+ordinary merge — the workflow stops after one registry lookup and does nothing.
+There is no tag to remember and no command to run by hand.
 
-**Write the release notes first.** Add a `## [x.y.z]` section to `CHANGELOG.md`
-describing the change in terms of what it means for someone using the tool, not
-what the commits did. The workflow reads that section as the GitHub release body
-and **fails before publishing** if it is missing or empty — npm versions cannot be
-un-published, so anything that can be checked early is checked early.
-
-**Merging a pull request publishes nothing.** The workflow triggers on
-`push: tags: ['v*']` and on nothing else. A version bump that reaches `main`
-without a tag behind it is published nowhere and is invisible until someone
-checks npm — which is exactly how 0.1.3 was lost. Whichever path you take below,
-the release happens when the tag lands, not when the branch does.
-
-**If you are releasing from `main` directly**, bump and tag in one step:
+So a release is a normal pull request that happens to bump the version:
 
 ```sh
-npm version patch     # or minor / major — bumps package.json, commits, tags
-git push --follow-tags
+# on your branch, in the same change as the code
+npm version minor --no-git-tag-version   # patch / minor / major
+# write the matching ## [x.y.z] section in CHANGELOG.md
 ```
 
-**If the version bump came in through a pull request** — the notes and the bump
-reviewed together, which is the better habit — then `npm version` has already
-run on the branch and must not run again. Tag the merge commit instead:
+`--no-git-tag-version` matters: the workflow creates the tag after a successful
+publish, so a tag always means "this exact commit is on npm". A tag pushed by
+hand beforehand just gets left alone.
 
-```sh
-git checkout main && git pull
-VERSION="$(node -p "require('./package.json').version")"
-git tag "v$VERSION"
-git push origin "v$VERSION"
-```
+**Write the release notes in the same change as the bump.** Add a `## [x.y.z]`
+section to `CHANGELOG.md` describing what the change means for someone using the
+tool, not what the commits did. CI fails any pull request whose `package.json`
+version has no matching section, and the release workflow checks again before
+publishing — npm versions cannot be un-published, so anything that can be
+checked early is checked early.
 
-CI fails any pull request whose `package.json` version has no matching
-`CHANGELOG.md` section, so the notes cannot be forgotten on the way in. Nothing
-can force the tag, though: after merging a release PR, push the tag or the
-version does not exist.
+Before publishing anything, the workflow requires:
 
-Pushing the tag triggers `.github/workflows/release.yml`, which refuses to
-publish unless:
-
-- the tag matches the `package.json` version exactly,
 - `CHANGELOG.md` has a non-empty section for that version,
 - that version is not already on npm,
 - the full test suite passes,
@@ -113,8 +96,22 @@ publish unless:
 That last check exists because a released binary was once a silent no-op while
 every unit test passed.
 
-On success it publishes to npm and creates the GitHub release from your
-CHANGELOG section.
+There is **no npm token anywhere** — publishing uses npm trusted publishing
+(OIDC), so GitHub Actions mints a short-lived credential scoped to the release
+workflow, and npm attaches a provenance attestation automatically.
+
+**Do not rename or move `.github/workflows/release.yml`.** The trusted publisher
+is registered against this repository *and this workflow path*. Moving the file
+revokes publishing, and the failure surfaces as an authentication error rather
+than anything that names the real cause.
+
+**Why it is not tag-driven.** It used to be, and version 0.1.3 was lost to it:
+`npm version` bumped `package.json` in one commit, the tag was pushed in another
+step that never happened, and the release simply did not exist until somebody
+checked npm months later. `npm version` is atomic only when you release from
+`main` directly; the moment a bump travels through a pull request, the bump and
+the tag are separated by a merge and nothing enforces the second half. Deriving
+the release from `package.json` removes the step that can be skipped.
 
 **First-time setup**, recorded here so it is not folklore: the very first version
 had to be published by hand, because a trusted publisher is configured against a

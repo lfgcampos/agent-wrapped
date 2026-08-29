@@ -1,18 +1,29 @@
 name: Release
 
-# Publishing is driven by tags. To cut a release:
-#   npm version patch   (bumps package.json, commits, and tags)
-#   then push the tag
-# The tag is the single source of truth for what gets released.
+# Publishing is driven by the version in package.json, not by a hand-pushed tag.
+# Merge to main with a bumped version and it ships; merge anything else and this
+# workflow is a no-op. The tag is an output of the release, not its trigger —
+# a tag here always means "this exact commit is on npm".
+#
+# The path of this file matters: npm trusted publishing is registered against
+# this repository AND this workflow path. Renaming or moving it revokes
+# publishing rights, and the failure looks like an authentication error.
 on:
   push:
-    tags: ['v*']
+    branches: [main]
+  # For re-running a release whose publish step failed after a fix elsewhere.
+  workflow_dispatch:
+
+# Two merges landing together must not race to publish the same version.
+concurrency:
+  group: release
+  cancel-in-progress: false
 
 jobs:
   publish:
     runs-on: ubuntu-latest
     permissions:
-      # gh release create writes a release object.
+      # Pushing the tag and writing the release object.
       contents: write
       # Required for npm trusted publishing (OIDC). No NPM_TOKEN is stored
       # anywhere — npm mints a short-lived credential scoped to this workflow.
@@ -33,62 +44,93 @@ jobs:
 
       - run: npm ci
 
-      # A tag that disagrees with package.json would publish the wrong version
-      # under the right name, which cannot be undone. Fail before that happens.
-      - name: Verify the tag matches package.json
+      # The entire decision, in one step. npm is the source of truth for what
+      # has shipped, so "is this version already published?" is the only
+      # question worth asking — it makes the workflow idempotent, and an
+      # ordinary merge costs one registry lookup and stops here.
+      - name: Decide whether this version needs releasing
+        id: check
         run: |
-          TAG="${GITHUB_REF_NAME#v}"
-          PKG="$(node -p "require('./package.json').version")"
-          echo "tag=$TAG package.json=$PKG"
-          if [ "$TAG" != "$PKG" ]; then
-            echo "::error::Tag $GITHUB_REF_NAME does not match package.json version $PKG"
-            exit 1
-          fi
-
-      # Publishing a version that already exists fails late and wastes the tag.
-      - name: Verify this version is not already published
-        run: |
-          PKG="$(node -p "require('./package.json').version")"
-          if npm view "@lfgcampos/agent-wrapped@$PKG" version >/dev/null 2>&1; then
-            echo "::error::@lfgcampos/agent-wrapped@$PKG is already on npm. Bump the version."
-            exit 1
+          NAME="$(node -p "require('./package.json').name")"
+          VERSION="$(node -p "require('./package.json').version")"
+          echo "name=$NAME" >> "$GITHUB_OUTPUT"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          if npm view "$NAME@$VERSION" version >/dev/null 2>&1; then
+            echo "needed=false" >> "$GITHUB_OUTPUT"
+            echo "$NAME@$VERSION is already on npm — nothing to do." >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "needed=true" >> "$GITHUB_OUTPUT"
+            echo "Releasing $NAME@$VERSION." >> "$GITHUB_STEP_SUMMARY"
           fi
 
       # Fail before publishing if this version has no release notes. npm cannot
-      # be un-published, so every check that can run early, runs early.
+      # be un-published, so every check that can run early, runs early. CI
+      # already enforces this on the pull request; this is the backstop for a
+      # commit that reached main without one.
       - name: Extract release notes from CHANGELOG
+        if: steps.check.outputs.needed == 'true'
         run: |
-          PKG="$(node -p "require('./package.json').version")"
-          node scripts/release-notes.mjs "$PKG" > RELEASE_NOTES.md
-          echo "--- notes for $PKG ---"
+          node scripts/release-notes.mjs "${{ steps.check.outputs.version }}" > RELEASE_NOTES.md
+          echo "--- notes for ${{ steps.check.outputs.version }} ---"
           cat RELEASE_NOTES.md
 
-      - run: npm test
-      - run: npm run build
+      - name: Test
+        if: steps.check.outputs.needed == 'true'
+        run: npm test
+
+      - name: Build
+        if: steps.check.outputs.needed == 'true'
+        run: npm run build
 
       # Smoke-test the built artifact the way a user actually reaches it, rather
       # than trusting that passing unit tests imply a working binary. A silent
       # no-op binary shipped once already.
       - name: Smoke-test the built CLI
+        if: steps.check.outputs.needed == 'true'
         run: |
           node dist/cli.js --version
           node dist/cli.js --help | grep -q -- '--since'
 
       # No --provenance flag needed: trusted publishing attaches provenance itself.
       - name: Publish to npm
+        if: steps.check.outputs.needed == 'true'
         run: npm publish --access public
 
+      # After the publish, never before: a tag that exists but was never
+      # published is exactly the confusion this workflow was rewritten to end.
+      - name: Tag the released commit
+        if: steps.check.outputs.needed == 'true'
+        env:
+          TAG: v${{ steps.check.outputs.version }}
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if git ls-remote --exit-code --tags origin "refs/tags/$TAG" >/dev/null 2>&1; then
+            echo "$TAG already exists on origin — leaving it as it is."
+          else
+            git tag "$TAG"
+            git push origin "$TAG"
+          fi
+
       - name: Create the GitHub release
+        if: steps.check.outputs.needed == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
+          TAG: v${{ steps.check.outputs.version }}
         run: |
-          gh release create "$GITHUB_REF_NAME" \
-            --title "$GITHUB_REF_NAME" \
-            --notes-file RELEASE_NOTES.md \
-            --verify-tag
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "Release $TAG already exists."
+          else
+            gh release create "$TAG" \
+              --title "$TAG" \
+              --notes-file RELEASE_NOTES.md \
+              --verify-tag
+          fi
 
       - name: Summarise
+        if: steps.check.outputs.needed == 'true'
         run: |
-          PKG="$(node -p "require('./package.json').version")"
-          echo "Published @lfgcampos/agent-wrapped@$PKG" >> "$GITHUB_STEP_SUMMARY"
-          echo "https://www.npmjs.com/package/@lfgcampos/agent-wrapped/v/$PKG" >> "$GITHUB_STEP_SUMMARY"
+          NAME="${{ steps.check.outputs.name }}"
+          VERSION="${{ steps.check.outputs.version }}"
+          echo "Published $NAME@$VERSION" >> "$GITHUB_STEP_SUMMARY"
+          echo "https://www.npmjs.com/package/$NAME/v/$VERSION" >> "$GITHUB_STEP_SUMMARY"
