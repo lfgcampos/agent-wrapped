@@ -51,7 +51,7 @@ across two days for anyone west of Greenwich. This broke streaks once already.
 
 Tests are `node:test` with no framework. Two things worth knowing:
 
-- **Test the real entry point.** A bug once made `npx agent-wrapped` a silent
+- **Test the real entry point.** A bug once made `npx @lfgcampos/agent-wrapped` a silent
   no-op while every unit test passed, because nothing spawned the binary.
   `test/entrypoint.test.ts` exists to stop that recurring.
 - **Fixture data hides display bugs.** Clean, well-separated fixture numbers once
@@ -99,12 +99,23 @@ had to be published by hand, because a trusted publisher is configured against a
 package that already exists. Once it did, the trusted publisher was registered on
 npmjs.com against this repository and the `release.yml` workflow.
 
-That bootstrap is **per package name**, so renaming the package repeats it. When
-the package moved from `@lfgcampos/agent-wrapped` to `agent-wrapped`, the first
-unscoped version had to go out from a laptop with `npm publish`, and only then
-could a trusted publisher be registered for the new name. Tag-driven releases do
-not work until that is done — the workflow authenticates as a publisher npm has
-never heard of and fails at the publish step.
+## Why the package is scoped
+
+Recorded so it is not attempted a third time: the unscoped name `agent-wrapped`
+cannot be published. npm rejects new names that collide with an existing one once
+punctuation is stripped, and [`agentwrapped`](https://www.npmjs.com/package/agentwrapped)
+was published in June 2026. `agent-wrapped` normalises to exactly that string, so
+the registry refuses it.
+
+The registry returning 404 for `agent-wrapped` does **not** mean the name is
+available — that only says nobody has published it. The similarity check runs at
+publish time and is the constraint that actually binds. Anyone re-checking this
+should test it the same way it will fail: `npm publish --dry-run` under the
+unscoped name, not a `GET` against the registry.
+
+`claude-wrapped` and `agentwrap` are taken as well. The scope stays. The binary is
+plain `agent-wrapped`, the domain is agent-wrapped.dev, and those are the names
+worth defending.
 
 ## Pull requests
 

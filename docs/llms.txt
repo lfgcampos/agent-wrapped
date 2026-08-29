@@ -5,7 +5,7 @@
 > subagent share, tool mix, streaks and hourly rhythm. It makes no network calls,
 > has zero runtime dependencies, and never prints your repository names.
 
-Run it with `npx agent-wrapped` on Node 22 or newer. Nothing is uploaded, there is
+Run it with `npx @lfgcampos/agent-wrapped` on Node 22 or newer. Nothing is uploaded, there is
 no account, and there is no telemetry: it reads `~/.claude/projects` and
 `~/.claude/settings.json` read-only and renders locally.
 
@@ -29,7 +29,7 @@ snapshot per run so you can keep years of history without keeping years of trans
 
 - [GitHub repository](https://github.com/lfgcampos/agent-wrapped): about a thousand
   lines of TypeScript, MIT licensed, readable in one sitting.
-- [npm package](https://www.npmjs.com/package/agent-wrapped): published with npm
+- [npm package](https://www.npmjs.com/package/@lfgcampos/agent-wrapped): published with npm
   trusted publishing (OIDC), so every release carries a provenance attestation.
 
 ## Optional

@@ -4,14 +4,14 @@ A wrapped card for how you actually work with Claude Code — read from your own
 transcripts, rendered on your own machine, sent nowhere.
 
 ```sh
-npx agent-wrapped
+npx @lfgcampos/agent-wrapped
 ```
 
 Node 22 or newer. No install, no account, no config.
 
 - Website: <https://agent-wrapped.dev>
 - Source: <https://github.com/lfgcampos/agent-wrapped>
-- Package: <https://www.npmjs.com/package/agent-wrapped>
+- Package: <https://www.npmjs.com/package/@lfgcampos/agent-wrapped>
 - Licence: MIT
 
 ## What it prints
@@ -81,7 +81,7 @@ the number would be fiction rather than a saving.
 
 ### How do I see my Claude Code usage statistics?
 
-Run `npx agent-wrapped` in a terminal. It reads the transcripts Claude Code already
+Run `npx @lfgcampos/agent-wrapped` in a terminal. It reads the transcripts Claude Code already
 keeps on your machine and prints a summary card — token read:write ratio, cache share,
 subagent share, tool mix, session counts, streaks and your hourly rhythm. Nothing is
 uploaded and no model is called, so it returns in seconds.

@@ -7,10 +7,10 @@ transcripts, rendered on your own machine, sent nowhere.
 **[Changelog](https://github.com/lfgcampos/agent-wrapped/releases)**
 
 ```sh
-npx agent-wrapped
+npx @lfgcampos/agent-wrapped
 ```
 
-Published as [`agent-wrapped`](https://www.npmjs.com/package/agent-wrapped). Earlier
+Published as [`agent-wrapped`](https://www.npmjs.com/package/@lfgcampos/agent-wrapped). Earlier
 releases went out under `@lfgcampos/agent-wrapped`, which still resolves but is no
 longer updated — switch to the unscoped name to keep getting releases.
 
@@ -41,7 +41,7 @@ longer updated — switch to the unscoped name to keep getting releases.
      4   times you hit the usage limit, across 3 weeks
     14   times the server was overloaded on you
 
-  npx agent-wrapped · agent-wrapped.dev
+  agent-wrapped.dev
 ```
 
 Add `--html` for a self-contained page at `~/.agent-wrapped/card.html`. It has a
@@ -64,12 +64,12 @@ so a screenshot is safe to post.
 ## Usage
 
 ```sh
-npx agent-wrapped                 # terminal card, all available history
-npx agent-wrapped --since 30d     # window: 30d, 12w, 6m, or 2026-08-01
-npx agent-wrapped --html          # writes ~/.agent-wrapped/card.html
-npx agent-wrapped --json          # raw stats, for your own charts
-npx agent-wrapped --no-save       # skip writing a snapshot
-npx agent-wrapped --help
+npx @lfgcampos/agent-wrapped                 # terminal card, all available history
+npx @lfgcampos/agent-wrapped --since 30d     # window: 30d, 12w, 6m, or 2026-08-01
+npx @lfgcampos/agent-wrapped --html          # writes ~/.agent-wrapped/card.html
+npx @lfgcampos/agent-wrapped --json          # raw stats, for your own charts
+npx @lfgcampos/agent-wrapped --no-save       # skip writing a snapshot
+npx @lfgcampos/agent-wrapped --help
 ```
 
 `--since` is *faster* than a full run: any transcript last written before the cutoff
