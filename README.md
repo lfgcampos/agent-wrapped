@@ -1,18 +1,14 @@
 # agent-wrapped
 
-**A wrapped card for how you actually work with Claude Code** — read from your own
-transcripts, rendered on your own machine, sent nowhere.
+**A wrapped card for how you actually work with Claude Code** — read from your own transcripts, rendered on your own machine, sent nowhere.
 
-**[agent-wrapped.dev](https://agent-wrapped.dev)** ·
-**[Changelog](https://github.com/lfgcampos/agent-wrapped/releases)**
+**[agent-wrapped.dev](https://agent-wrapped.dev)** · **[Changelog](https://github.com/lfgcampos/agent-wrapped/releases)**
 
 ```sh
 npx @lfgcampos/agent-wrapped
 ```
 
-Published as [`agent-wrapped`](https://www.npmjs.com/package/@lfgcampos/agent-wrapped). Earlier
-releases went out under `@lfgcampos/agent-wrapped`, which still resolves but is no
-longer updated — switch to the unscoped name to keep getting releases.
+Published as [`agent-wrapped`](https://www.npmjs.com/package/@lfgcampos/agent-wrapped). Earlier releases went out under `@lfgcampos/agent-wrapped`, which still resolves but is no longer updated — switch to the unscoped name to keep getting releases.
 
 ```
   CLAUDE CODE · 33 ACTIVE DAYS                  2026-07-16 → 2026-08-25
@@ -44,9 +40,7 @@ longer updated — switch to the unscoped name to keep getting releases.
   agent-wrapped.dev
 ```
 
-Add `--html` for a self-contained page at `~/.agent-wrapped/card.html`. It has a
-**Save as image** button that renders a 1200×630 PNG for sharing — drawn in your
-own browser, never uploaded anywhere.
+Add `--html` for a self-contained page at `~/.agent-wrapped/card.html`. It has a **Save as image** button that renders a 1200×630 PNG for sharing — drawn in your own browser, never uploaded anywhere.
 
 ## Nothing leaves your machine
 
@@ -54,12 +48,9 @@ own browser, never uploaded anywhere.
 - **Zero runtime dependencies.** No third-party code to audit but this.
 - **It is about a thousand lines.** Read `src/` and confirm both claims yourself.
 
-It reads exactly two paths, both read-only: `~/.claude/projects` (your transcripts)
-and `~/.claude/settings.json` (to check your retention setting).
+It reads exactly two paths, both read-only: `~/.claude/projects` (your transcripts) and `~/.claude/settings.json` (to check your retention setting).
 
-**Your repository names are never rendered**, never logged, and never written to
-`--json`. They are used as grouping keys and discarded before anything is displayed,
-so a screenshot is safe to post.
+**Your repository names are never rendered**, never logged, and never written to `--json`. They are used as grouping keys and discarded before anything is displayed, so a screenshot is safe to post.
 
 ## Usage
 
@@ -72,13 +63,11 @@ npx @lfgcampos/agent-wrapped --no-save       # skip writing a snapshot
 npx @lfgcampos/agent-wrapped --help
 ```
 
-`--since` is *faster* than a full run: any transcript last written before the cutoff
-is skipped without being opened.
+`--since` is *faster* than a full run: any transcript last written before the cutoff is skipped without being opened.
 
 ## Build history without hoarding transcripts
 
-Every full run saves a summary to `~/.agent-wrapped/snapshots/YYYY-MM-DD.json` and
-compares against the most recent earlier one:
+Every full run saves a summary to `~/.agent-wrapped/snapshots/YYYY-MM-DD.json` and compares against the most recent earlier one:
 
 ```
   SINCE YOUR LAST SNAPSHOT   (2026-07-25, 31 days ago)
@@ -88,16 +77,11 @@ compares against the most recent earlier one:
      top skill writing-plans → brainstorming
 ```
 
-A snapshot is about **1 KB** against roughly a gigabyte of transcripts summarised.
-Run it on the first of each month and you accumulate years of history for well under
-a megabyte — while letting Claude Code delete the raw transcripts as usual.
+A snapshot is about **1 KB** against roughly a gigabyte of transcripts summarised. Run it on the first of each month and you accumulate years of history for well under a megabyte — while letting Claude Code delete the raw transcripts as usual.
 
-Snapshots live **outside `~/.claude`** deliberately: Claude Code prunes its own
-directory on a schedule, and storing history there would let the very cleanup this
-tool warns about delete the record kept to survive it.
+Snapshots live **outside `~/.claude`** deliberately: Claude Code prunes its own directory on a schedule, and storing history there would let the very cleanup this tool warns about delete the record kept to survive it.
 
-If you run less often than your retention window, transcripts are deleted while you
-are away, and the card tells you how much was lost:
+If you run less often than your retention window, transcripts are deleted while you are away, and the card tells you how much was lost:
 
 ```
   ⚠  43 days of history were deleted between these two runs.
@@ -105,11 +89,7 @@ are away, and the card tells you how much was lost:
 
 ## Keeping more raw history is a disk decision
 
-Claude Code deletes transcripts after about 30 days by default, so most people have a
-month of data rather than a year. Keeping more is not free — a heavy user writes
-roughly 25 MB per day, which is about **9 GB for a year**. So the card measures *your*
-growth rate and suggests a horizon that fits, showing the year's cost so you can
-overrule it knowingly:
+Claude Code deletes transcripts after about 30 days by default, so most people have a month of data rather than a year. Keeping more is not free — a heavy user writes roughly 25 MB per day, which is about **9 GB for a year**. So the card measures *your* growth rate and suggests a horizon that fits, showing the year's cost so you can overrule it knowingly:
 
 ```
   ⚠  41 days of history · 799 MB on disk (24 MB/day)
@@ -121,8 +101,7 @@ Either way it only affects data from now on — anything already deleted is gone
 
 ## What the numbers mean
 
-Every percentage states its denominator, because the same figure can be honest two
-different ways.
+Every percentage states its denominator, because the same figure can be honest two different ways.
 
 | Number | Divided by |
 |---|---|
@@ -134,55 +113,35 @@ different ways.
 | **tool mix** | calls to that tool over all tool calls |
 | **streak** | consecutive local calendar days with activity; "current" only if it reaches today or yesterday |
 
-Skill and repo shares are weighted by **tokens written**, not total tokens. Totals are
-dominated by cache reads, which would flatten everything to roughly the same value.
+Skill and repo shares are weighted by **tokens written**, not total tokens. Totals are dominated by cache reads, which would flatten everything to roughly the same value.
 
-There are no costs or currency figures anywhere, deliberately. Pricing local usage at
-API rates values a behaviour that only exists *because* it is not billed that way, so
-the number would be fiction rather than a saving.
+There are no costs or currency figures anywhere, deliberately. Pricing local usage at API rates values a behaviour that only exists *because* it is not billed that way, so the number would be fiction rather than a saving.
 
 ## How does this relate to `/insights`?
 
-They complement each other. Claude Code's built-in `/insights` asks a model to write a
-narrative about *what it was like* working with Claude — friction, satisfaction,
-interruptions. It costs tokens and takes time.
+They complement each other. Claude Code's built-in `/insights` asks a model to write a narrative about *what it was like* working with Claude — friction, satisfaction, interruptions. It costs tokens and takes time.
 
-`agent-wrapped` answers a different question — *what does my usage look like as a
-number* — deterministically, instantly, with no model call, in a form you can share.
+`agent-wrapped` answers a different question — *what does my usage look like as a number* — deterministically, instantly, with no model call, in a form you can share.
 
 ## Requirements
 
-Node 22 or newer. Tested on Node 22, 24 and 26, on Linux, macOS and Windows, and
-across four timezones — day boundaries are computed locally, and that is easy to get
-wrong.
+Node 22 or newer. Tested on Node 22, 24 and 26, on Linux, macOS and Windows, and across four timezones — day boundaries are computed locally, and that is easy to get wrong.
 
 ## Releasing
 
-Every version's notes are on the
-[releases page](https://github.com/lfgcampos/agent-wrapped/releases), generated
-from [CHANGELOG.md](CHANGELOG.md). Releases are tag-driven and automated — see
-[CONTRIBUTING.md](CONTRIBUTING.md#releasing).
-Published with npm trusted publishing (OIDC), so every release carries a
-provenance attestation and no long-lived token exists to leak.
+Every version's notes are on the [releases page](https://github.com/lfgcampos/agent-wrapped/releases), generated from [CHANGELOG.md](CHANGELOG.md). Releases are tag-driven and automated — see [CONTRIBUTING.md](CONTRIBUTING.md#releasing). Published with npm trusted publishing (OIDC), so every release carries a provenance attestation and no long-lived token exists to leak.
 
 ## Contributing
 
-Pull requests welcome. Please read [CONTRIBUTING.md](CONTRIBUTING.md) first — it lists
-the handful of design rules that are deliberate (no network calls, no dependencies, no
-currency, no personality scoring) so you do not spend effort on a change that gets
-turned down for a reason that was never written down.
+Pull requests welcome. Please read [CONTRIBUTING.md](CONTRIBUTING.md) first — it lists the handful of design rules that are deliberate (no network calls, no dependencies, no currency, no personality scoring) so you do not spend effort on a change that gets turned down for a reason that was never written down.
 
 ## Who made this
 
-Built by **Lucas Campos** — [LinkedIn](https://www.linkedin.com/in/lfgcampos/) ·
-[GitHub](https://github.com/lfgcampos).
+Built by **Lucas Campos** — [LinkedIn](https://www.linkedin.com/in/lfgcampos/) · [GitHub](https://github.com/lfgcampos).
 
-I write about engineering leadership and AI-assisted development at
-[lfgcampos.substack.com](https://lfgcampos.substack.com).
+I write about engineering leadership and AI-assisted development at [lfgcampos.substack.com](https://lfgcampos.substack.com).
 
-Also mine: **[whatkindof.dev](https://whatkindof.dev)** — a developer personality
-test for the AI era. That one asks how you *think* you work; this one reads what
-your logs actually say.
+Also mine: **[whatkindof.dev](https://whatkindof.dev)** — a developer personality test for the AI era. That one asks how you *think* you work; this one reads what your logs actually say.
 
 ## Licence
 

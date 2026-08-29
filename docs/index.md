@@ -1,7 +1,6 @@
 # agent-wrapped
 
-A wrapped card for how you actually work with Claude Code — read from your own
-transcripts, rendered on your own machine, sent nowhere.
+A wrapped card for how you actually work with Claude Code — read from your own transcripts, rendered on your own machine, sent nowhere.
 
 ```sh
 npx @lfgcampos/agent-wrapped
@@ -57,8 +56,7 @@ Node 22 or newer. No install, no account, no config.
 
 ## What each number divides by
 
-Every percentage names its denominator, because the same figure can be honest two
-different ways.
+Every percentage names its denominator, because the same figure can be honest two different ways.
 
 | Number | Divided by |
 |---|---|
@@ -70,85 +68,52 @@ different ways.
 | tool mix | calls to that tool over all tool calls |
 | streak | consecutive local calendar days with activity; "current" only if it reaches today or yesterday |
 
-Skill and repo shares are weighted by tokens written, not total tokens. Totals are
-dominated by cache reads, which would flatten everything to roughly the same value.
+Skill and repo shares are weighted by tokens written, not total tokens. Totals are dominated by cache reads, which would flatten everything to roughly the same value.
 
-There are no costs or currency figures anywhere, deliberately. Pricing local usage at
-API rates values a behaviour that only exists *because* it is not billed that way, so
-the number would be fiction rather than a saving.
+There are no costs or currency figures anywhere, deliberately. Pricing local usage at API rates values a behaviour that only exists *because* it is not billed that way, so the number would be fiction rather than a saving.
 
 ## Questions
 
 ### How do I see my Claude Code usage statistics?
 
-Run `npx @lfgcampos/agent-wrapped` in a terminal. It reads the transcripts Claude Code already
-keeps on your machine and prints a summary card — token read:write ratio, cache share,
-subagent share, tool mix, session counts, streaks and your hourly rhythm. Nothing is
-uploaded and no model is called, so it returns in seconds.
+Run `npx @lfgcampos/agent-wrapped` in a terminal. It reads the transcripts Claude Code already keeps on your machine and prints a summary card — token read:write ratio, cache share, subagent share, tool mix, session counts, streaks and your hourly rhythm. Nothing is uploaded and no model is called, so it returns in seconds.
 
 ### Where does Claude Code store its transcripts and conversation history?
 
-In `~/.claude/projects`, as JSONL files — one directory per project, one file per
-session. Your settings, including retention, live in `~/.claude/settings.json`.
-Those are the only two paths agent-wrapped reads, both read-only.
+In `~/.claude/projects`, as JSONL files — one directory per project, one file per session. Your settings, including retention, live in `~/.claude/settings.json`. Those are the only two paths agent-wrapped reads, both read-only.
 
 ### How long does Claude Code keep transcripts?
 
-About 30 days by default, after which older transcripts are deleted. The setting is
-`cleanupPeriodDays` in `~/.claude/settings.json`. Most people therefore have a month
-of history rather than a year, which is why agent-wrapped warns you before that
-window closes on data you have not summarised yet.
+About 30 days by default, after which older transcripts are deleted. The setting is `cleanupPeriodDays` in `~/.claude/settings.json`. Most people therefore have a month of history rather than a year, which is why agent-wrapped warns you before that window closes on data you have not summarised yet.
 
 ### How do I stop Claude Code from deleting my history?
 
-Raise `cleanupPeriodDays` in `~/.claude/settings.json`. It is not free: a heavy user
-writes roughly 25 MB of transcripts a day, so a full year is around 9 GB. agent-wrapped
-measures *your* growth rate and suggests a horizon that fits, showing what a year would
-actually cost so you can overrule it knowingly. Changing the setting only affects data
-from now on — anything already deleted is gone.
+Raise `cleanupPeriodDays` in `~/.claude/settings.json`. It is not free: a heavy user writes roughly 25 MB of transcripts a day, so a full year is around 9 GB. agent-wrapped measures *your* growth rate and suggests a horizon that fits, showing what a year would actually cost so you can overrule it knowingly. Changing the setting only affects data from now on — anything already deleted is gone.
 
-The cheaper alternative is to keep the 30-day default and run agent-wrapped monthly.
-Each run saves a ~1 KB snapshot to `~/.agent-wrapped/snapshots/`, so years of history
-cost under a megabyte. Snapshots live outside `~/.claude` deliberately, so the very
-cleanup this tool warns about cannot delete the record kept to survive it.
+The cheaper alternative is to keep the 30-day default and run agent-wrapped monthly. Each run saves a ~1 KB snapshot to `~/.agent-wrapped/snapshots/`, so years of history cost under a megabyte. Snapshots live outside `~/.claude` deliberately, so the very cleanup this tool warns about cannot delete the record kept to survive it.
 
 ### Is there a Claude Code Wrapped?
 
-Not an official one. agent-wrapped is a third-party, MIT-licensed CLI that builds the
-equivalent from the transcripts already on your disk, at any time of year rather than
-once each December.
+Not an official one. agent-wrapped is a third-party, MIT-licensed CLI that builds the equivalent from the transcripts already on your disk, at any time of year rather than once each December.
 
 ### Does agent-wrapped send my data anywhere?
 
-No. There are no network calls at all — no server, no account, no analytics, no
-version check — and zero runtime dependencies, so there is no third-party code in the
-package. It is about a thousand lines of TypeScript; you can read `src/` and confirm
-both claims yourself.
+No. There are no network calls at all — no server, no account, no analytics, no version check — and zero runtime dependencies, so there is no third-party code in the package. It is about a thousand lines of TypeScript; you can read `src/` and confirm both claims yourself.
 
-Your repository names are never rendered, never logged, and never written to `--json`.
-They are used as grouping keys and discarded before anything is displayed, so a
-screenshot of the card is safe to post.
+Your repository names are never rendered, never logged, and never written to `--json`. They are used as grouping keys and discarded before anything is displayed, so a screenshot of the card is safe to post.
 
 ### How is this different from Claude Code's `/insights`?
 
-They answer different questions. `/insights` asks a model to write a narrative about
-what it was *like* working with Claude — friction, satisfaction, interruptions. It
-costs tokens and takes time. agent-wrapped answers *what does my usage look like as a
-number*, deterministically and instantly, with no model call, in a form you can share.
+They answer different questions. `/insights` asks a model to write a narrative about what it was *like* working with Claude — friction, satisfaction, interruptions. It costs tokens and takes time. agent-wrapped answers *what does my usage look like as a number*, deterministically and instantly, with no model call, in a form you can share.
 
 ### Does it work with Cursor, Codex, or other coding agents?
 
-Not yet. It reads Claude Code's transcript format specifically. Support for other
-agents is a reasonable feature request — open an issue on GitHub.
+Not yet. It reads Claude Code's transcript format specifically. Support for other agents is a reasonable feature request — open an issue on GitHub.
 
 ### What are the requirements?
 
-Node 22 or newer. Tested on Node 22, 24 and 26, on Linux, macOS and Windows, and
-across four timezones — day boundaries are computed locally, and that is easy to get
-wrong.
+Node 22 or newer. Tested on Node 22, 24 and 26, on Linux, macOS and Windows, and across four timezones — day boundaries are computed locally, and that is easy to get wrong.
 
 ## Author
 
-Lucas Campos — [Substack](https://lfgcampos.substack.com) ·
-[LinkedIn](https://www.linkedin.com/in/lfgcampos/) ·
-[GitHub](https://github.com/lfgcampos)
+Lucas Campos — [Substack](https://lfgcampos.substack.com) · [LinkedIn](https://www.linkedin.com/in/lfgcampos/) · [GitHub](https://github.com/lfgcampos)
