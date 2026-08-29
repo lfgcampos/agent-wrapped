@@ -165,3 +165,16 @@ Keep them focused, include a test, and say what you *considered and rejected* �
 that is the part a diff cannot show. If you are changing one of the rules above,
 open an issue first; they are all reversible, but each was a decision rather than
 an accident.
+
+Every pull request requests the owner's review, via `.github/CODEOWNERS`. That
+file only requests a review on its own; it blocks a merge only when branch
+protection on `main` has **Require review from Code Owners** enabled alongside
+**Require a pull request before merging**.
+
+One consequence, recorded because it looks like a misconfiguration when you hit
+it: GitHub does not let anyone approve their own pull request, so with a single
+code owner those rules block the owner's own work too. The fix is to leave
+admin bypass available — do *not* enable "Do not allow bypassing the above
+settings" — so the rule does what it is there for, which is stopping a
+contributor's pull request from merging unreviewed, rather than locking the one
+maintainer out of their own repository.

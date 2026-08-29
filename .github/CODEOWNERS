@@ -1,6 +1,11 @@
-# The release path. A pull request touching any of these needs review from the
-# owner, because between them they decide what gets published and under whose
-# authority — the environment gate in release.yml is only as strong as the
+# Every pull request requests the owner's review. On a public repository that is
+# the point: contributions are welcome, unreviewed merges are not.
+*                  @lfgcampos
+
+# The release path, called out separately even though the line above already
+# covers it. If `*` ever gains a co-maintainer, these stay owner-only —
+# between them these files decide what gets published and under whose
+# authority, and the environment gate in release.yml is only as strong as the
 # review on the file that declares it.
 #
 # This is a review requirement, not a permission boundary. The boundary that
