@@ -45,6 +45,17 @@ test('the same data spans two days for a UTC user', async () => {
   assert.equal(await activeDays('UTC'), '2');
 });
 
+test('the far side of the date line folds the same data into one day', async () => {
+  // Kiritimati is UTC+14 all year, so all three records land on 2 August local.
+  assert.equal(await activeDays('Pacific/Kiritimati'), '1');
+});
+
+test('a half-hour offset still cuts the day at local midnight', async () => {
+  // Kolkata is UTC+05:30. Offsets that are not whole hours are where day
+  // arithmetic tends to go wrong, and 00:00 UTC is 05:30 the next day here.
+  assert.equal(await activeDays('Asia/Kolkata'), '2');
+});
+
 test('reports a clear message when files exist but hold no usable records', async () => {
   const root = await mkdtemp(join(tmpdir(), 'aw-'));
   const project = join(root, '.claude', 'projects', '-Users-me-p');

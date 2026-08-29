@@ -31,11 +31,8 @@ jobs:
       - run: npm run build
 
   release-notes:
-    # 0.1.3 was bumped in one commit and never tagged, so it reached neither npm
-    # nor the CHANGELOG and nobody noticed for months. The version in
-    # package.json must always have notes ready, whether or not a tag follows —
-    # the release workflow checks this too, but only once the tag is pushed,
-    # which is far too late to be useful.
+    # The release workflow runs this same check, but not until a release is
+    # already under way. Failing here instead costs nothing.
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -51,35 +48,17 @@ jobs:
           fi
           echo "$PKG has release notes."
 
-  timezones:
-    # Day boundaries are computed in local time; a UTC-only CI would hide bugs
-    # that only appear for users east or west of Greenwich.
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        tz: ['UTC', 'America/Los_Angeles', 'Pacific/Auckland', 'Asia/Kolkata', 'Pacific/Kiritimati']
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '24'
-          cache: npm
-      - run: npm ci
-      - run: npm test
-        env:
-          TZ: ${{ matrix.tz }}
-
   ci-ok:
     # The single check to require in branch protection.
     #
-    # `test` and `timezones` are matrix jobs, so they report as "test (22,
-    # ubuntu-latest)" and so on — a rule requiring the bare name waits forever
-    # for a check that never arrives. Naming all ten instead would then have to
-    # be edited by hand every time a Node version or a timezone is added, and a
-    # forgotten edit silently stops enforcing the new one. This job depends on
-    # them all and is the only name protection needs to know.
+    # `test` is a matrix job, so it reports as "test (22, ubuntu-latest)" and so
+    # on — a rule requiring the bare name waits forever for a check that never
+    # arrives. Naming each combination instead has to be edited by hand every
+    # time a Node version is added, and a forgotten edit silently stops
+    # enforcing the new one. This job depends on them all and is the only name
+    # protection needs to know.
     if: always()
-    needs: [test, release-notes, timezones]
+    needs: [test, release-notes]
     runs-on: ubuntu-latest
     steps:
       # `needs` alone is not enough: a job whose dependency failed is *skipped*,
