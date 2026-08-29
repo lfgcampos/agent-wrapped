@@ -71,12 +71,34 @@ what the commits did. The workflow reads that section as the GitHub release body
 and **fails before publishing** if it is missing or empty — npm versions cannot be
 un-published, so anything that can be checked early is checked early.
 
-Then bump the version and push the tag:
+**Merging a pull request publishes nothing.** The workflow triggers on
+`push: tags: ['v*']` and on nothing else. A version bump that reaches `main`
+without a tag behind it is published nowhere and is invisible until someone
+checks npm — which is exactly how 0.1.3 was lost. Whichever path you take below,
+the release happens when the tag lands, not when the branch does.
+
+**If you are releasing from `main` directly**, bump and tag in one step:
 
 ```sh
 npm version patch     # or minor / major — bumps package.json, commits, tags
 git push --follow-tags
 ```
+
+**If the version bump came in through a pull request** — the notes and the bump
+reviewed together, which is the better habit — then `npm version` has already
+run on the branch and must not run again. Tag the merge commit instead:
+
+```sh
+git checkout main && git pull
+VERSION="$(node -p "require('./package.json').version")"
+git tag "v$VERSION"
+git push origin "v$VERSION"
+```
+
+CI fails any pull request whose `package.json` version has no matching
+`CHANGELOG.md` section, so the notes cannot be forgotten on the way in. Nothing
+can force the tag, though: after merging a release PR, push the tag or the
+version does not exist.
 
 Pushing the tag triggers `.github/workflows/release.yml`, which refuses to
 publish unless:

@@ -28,6 +28,17 @@ GitHub release body and refuses to publish without one.
 - **npm keywords went from seven to eighteen**, adding the terms people actually
   search — `anthropic`, `agent`, `token-usage`, `analytics`, `year-in-review`.
 
+## 0.1.3 — never released
+
+`package.json` was bumped to 0.1.3, but the tag was never pushed and nothing was
+published: npm went from 0.1.2 straight to 0.2.0. The commit behind the bump
+(37e12bd) changed only release tooling — the CHANGELOG, `release-notes.mjs` and
+the release workflow — and touched nothing under `src/`, so the published
+artefact would have been byte-identical to 0.1.2.
+
+Recorded rather than quietly renumbered, because the gap is the useful part: a
+version bumped in one commit and tagged in another can be lost between the two.
+CI now fails when `package.json` names a version this file has no notes for.
 
 ## [0.1.2]
 
@@ -81,7 +92,8 @@ Initial release.
 - A size-aware retention warning that measures your own growth rate rather than
   telling everyone to keep a year of transcripts.
 
-[Unreleased]: https://github.com/lfgcampos/agent-wrapped/compare/v0.1.2...HEAD
+[Unreleased]: https://github.com/lfgcampos/agent-wrapped/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/lfgcampos/agent-wrapped/compare/v0.1.2...v0.2.0
 [0.1.2]: https://github.com/lfgcampos/agent-wrapped/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/lfgcampos/agent-wrapped/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/lfgcampos/agent-wrapped/releases/tag/v0.1.0
