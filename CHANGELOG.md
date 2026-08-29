@@ -9,6 +9,40 @@ GitHub release body and refuses to publish without one.
 
 ## [Unreleased]
 
+## [0.2.0]
+
+### Added
+
+- **The terminal card names itself.** One line at the foot of the card reads
+  `agent-wrapped.dev`. A screenshot loses every link around it, and that line is
+  what tells the next reader what they are looking at. It is a printed string,
+  not a network call — the no-telemetry rule is unchanged.
+- **Machine-readable documentation.** agent-wrapped.dev now serves `/index.md`
+  (the whole page as Markdown), `/llms.txt`, `/robots.txt` and `/sitemap.xml`, and
+  the page carries `SoftwareApplication` and `FAQPage` structured data. An agent
+  asked about Claude Code usage statistics can fetch plain text instead of
+  scraping 13 KB of inline CSS.
+- **A questions section** on agent-wrapped.dev, answering where Claude Code keeps
+  its transcripts, how long it keeps them, how to change `cleanupPeriodDays`, and
+  how the card differs from `/insights`.
+- **npm keywords went from seven to eighteen**, adding the terms people actually
+  search — `anthropic`, `agent`, `token-usage`, `analytics`, `year-in-review`.
+
+## 0.1.3 — never released
+
+`package.json` was bumped to 0.1.3, but the tag was never pushed and nothing was
+published: npm went from 0.1.2 straight to 0.2.0. The commit behind the bump
+(37e12bd) changed only release tooling — the CHANGELOG, `release-notes.mjs` and
+the release workflow — and touched nothing under `src/`, so the published
+artefact would have been byte-identical to 0.1.2.
+
+Recorded rather than quietly renumbered, because the gap is the useful part: a
+version bumped in one commit and tagged in another can be lost between the two.
+Releasing is now driven by the version in `package.json` rather than by a
+hand-pushed tag, so there is no longer a second step to skip, and CI fails any
+change whose version has no notes in this file. Publishing itself waits on an
+approval, so a merge asks rather than ships.
+
 ## [0.1.2]
 
 ### Added
@@ -61,7 +95,8 @@ Initial release.
 - A size-aware retention warning that measures your own growth rate rather than
   telling everyone to keep a year of transcripts.
 
-[Unreleased]: https://github.com/lfgcampos/agent-wrapped/compare/v0.1.2...HEAD
+[Unreleased]: https://github.com/lfgcampos/agent-wrapped/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/lfgcampos/agent-wrapped/compare/v0.1.2...v0.2.0
 [0.1.2]: https://github.com/lfgcampos/agent-wrapped/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/lfgcampos/agent-wrapped/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/lfgcampos/agent-wrapped/releases/tag/v0.1.0

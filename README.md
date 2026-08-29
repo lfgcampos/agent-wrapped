@@ -10,8 +10,9 @@ transcripts, rendered on your own machine, sent nowhere.
 npx @lfgcampos/agent-wrapped
 ```
 
-The package is scoped; the command it installs is plain `agent-wrapped`, so after a
-global install you just run that.
+Published as [`agent-wrapped`](https://www.npmjs.com/package/@lfgcampos/agent-wrapped). Earlier
+releases went out under `@lfgcampos/agent-wrapped`, which still resolves but is no
+longer updated — switch to the unscoped name to keep getting releases.
 
 ```
   CLAUDE CODE · 33 ACTIVE DAYS                  2026-07-16 → 2026-08-25
@@ -39,6 +40,8 @@ global install you just run that.
   BATTLE SCARS
      4   times you hit the usage limit, across 3 weeks
     14   times the server was overloaded on you
+
+  agent-wrapped.dev
 ```
 
 Add `--html` for a self-contained page at `~/.agent-wrapped/card.html`. It has a

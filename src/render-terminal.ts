@@ -180,6 +180,13 @@ export function renderTerminal(
     lines.push('');
     lines.push(`  saved a snapshot to ${savedTo}   (local only · --no-save to skip)`);
   }
+  // This card exists to be screenshotted, and a screenshot loses every link
+  // around it. This last line is what tells the next reader what they are
+  // looking at — it is a printed string, not a network call. The domain
+  // rather than the install command: the package is scoped, and a scope is
+  // the part people mistype from a screenshot.
+  lines.push('');
+  lines.push('  agent-wrapped.dev');
   lines.push('');
   return lines.join('\n');
 }
