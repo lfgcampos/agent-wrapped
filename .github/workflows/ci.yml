@@ -68,3 +68,25 @@ jobs:
       - run: npm test
         env:
           TZ: ${{ matrix.tz }}
+
+  ci-ok:
+    # The single check to require in branch protection.
+    #
+    # `test` and `timezones` are matrix jobs, so they report as "test (22,
+    # ubuntu-latest)" and so on — a rule requiring the bare name waits forever
+    # for a check that never arrives. Naming all ten instead would then have to
+    # be edited by hand every time a Node version or a timezone is added, and a
+    # forgotten edit silently stops enforcing the new one. This job depends on
+    # them all and is the only name protection needs to know.
+    if: always()
+    needs: [test, release-notes, timezones]
+    runs-on: ubuntu-latest
+    steps:
+      # `needs` alone is not enough: a job whose dependency failed is *skipped*,
+      # and a skipped required check can count as satisfied. Assert the results.
+      - name: Every prerequisite job succeeded
+        if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') || contains(needs.*.result, 'skipped')
+        run: |
+          echo "::error::A prerequisite job did not succeed: ${{ join(needs.*.result, ', ') }}"
+          exit 1
+      - run: echo "test, release-notes and timezones all succeeded."

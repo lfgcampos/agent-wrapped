@@ -171,6 +171,13 @@ file only requests a review on its own; it blocks a merge only when branch
 protection on `main` has **Require review from Code Owners** enabled alongside
 **Require a pull request before merging**.
 
+The one status check to require is **`ci-ok`**. `test` and `timezones` are matrix
+jobs that report as `test (22, ubuntu-latest)` and so on, so a rule naming either
+of them waits forever for a check that never arrives; `ci-ok` depends on all
+three jobs and fails if any of them does. Requiring it rather than the matrix
+names also means adding a Node version or a timezone needs no change to branch
+protection, and cannot silently go unenforced.
+
 One consequence, recorded because it looks like a misconfiguration when you hit
 it: GitHub does not let anyone approve their own pull request, so with a single
 code owner those rules block the owner's own work too. The fix is to leave
