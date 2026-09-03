@@ -6,6 +6,8 @@ Each released version needs a section here — the release workflow reads it as 
 
 ## [Unreleased]
 
+## [0.3.0]
+
 ### Added
 
 - **Which model did the writing.** The card names the model most of your words came from, as a share of all tokens written, next to how many models you used at all. The model was already on every transcript record and was being discarded before it reached the card. Ids are normalised to the name a person would say — `claude-sonnet-4-5-20250929` becomes `Sonnet 4.5` — and two context tiers of one model (`claude-opus-5` and `claude-opus-5[1m]`) count as one model rather than two. Two naming eras are in play and they order the parts oppositely, so the family is read as the first non-numeric segment rather than by position; an id that still does not parse is printed as it arrived, because a wrong model name is worse than a raw one.
@@ -72,7 +74,8 @@ Initial release.
 - Snapshots: each full run saves a ~1 KB summary to `~/.agent-wrapped/snapshots/` and compares against the previous one, so you can keep a year of history without keeping a year of transcripts.
 - A size-aware retention warning that measures your own growth rate rather than telling everyone to keep a year of transcripts.
 
-[Unreleased]: https://github.com/lfgcampos/agent-wrapped/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/lfgcampos/agent-wrapped/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/lfgcampos/agent-wrapped/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/lfgcampos/agent-wrapped/compare/v0.1.2...v0.2.0
 [0.1.2]: https://github.com/lfgcampos/agent-wrapped/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/lfgcampos/agent-wrapped/compare/v0.1.0...v0.1.1

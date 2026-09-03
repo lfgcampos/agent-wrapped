@@ -1,6 +1,6 @@
 {
   "name": "@lfgcampos/agent-wrapped",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Local-first wrapped card for your Claude Code usage. Nothing leaves your machine.",
   "keywords": [
     "claude",
