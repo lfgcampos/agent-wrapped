@@ -80,7 +80,7 @@ There are no costs or currency figures anywhere, deliberately. Pricing local usa
 
 ### How do I see my Claude Code usage statistics?
 
-Run `npx @lfgcampos/agent-wrapped` in a terminal. It reads the transcripts Claude Code already keeps on your machine and prints a summary card — token read:write ratio, cache share, subagent share, tool mix, session counts, streaks and your hourly rhythm. Nothing is uploaded and no model is called, so it returns in seconds.
+Run `npx @lfgcampos/agent-wrapped` in a terminal. It reads the transcripts Claude Code already keeps on your machine and prints a summary card — token read:write ratio, cache share, subagent share, model mix, tool mix, session counts, streaks and your hourly rhythm. Nothing is uploaded and no model is called, so it returns in seconds.
 
 ### Where does Claude Code store its transcripts and conversation history?
 
