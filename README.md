@@ -11,12 +11,12 @@ npx @lfgcampos/agent-wrapped
 Published as [`agent-wrapped`](https://www.npmjs.com/package/@lfgcampos/agent-wrapped). Earlier releases went out under `@lfgcampos/agent-wrapped`, which still resolves but is no longer updated — switch to the unscoped name to keep getting releases.
 
 ```
-  CLAUDE CODE · 33 ACTIVE DAYS                  2026-07-16 → 2026-08-25
+  CLAUDE CODE · 33 OF 41 DAYS ACTIVE            2026-07-16 → 2026-08-25
 
          394 : 1
          tokens read for every token written
 
-  4-day streak · longest 18 · you work most at 3pm
+  4-day streak · longest 18 · 5h 48m at a stretch · you work most at 3pm
   ▂▂▂▅▅▁▁▁▁▁▁▂▁▁▂█▆▇▃▄▅▆▆▃   19% of your writing is weekend work
   00                      23
 
@@ -24,6 +24,7 @@ Published as [`agent-wrapped`](https://www.npmjs.com/package/@lfgcampos/agent-wr
    42%   of your calls were subagents…
     6%   …but they wrote only that share of the words
    58%   of your writing went to 3 of your 19 repos
+   96%   of your writing came from Opus 5, of 4 models you used
 
   WHAT YOU REACH FOR                    (% of 49,566 tool calls)
   ██████████████  62%  Bash
@@ -109,11 +110,14 @@ Every percentage states its denominator, because the same figure can be honest t
 | **cache share** | cache reads over *all context read* — not over all tokens |
 | **subagent shares** | calls over all calls; written tokens over all written tokens. Reported as a pair on purpose: subagents read heavily and write little |
 | **repo concentration** | tokens written in your top 3 repos over all tokens written |
+| **model share** | tokens written by that model over all tokens written. Two context tiers of one model (`claude-opus-5` and `claude-opus-5[1m]`) are one model, not two |
 | **skill percentages** | tokens written inside that skill over tokens written inside *any* skill — itself a minority of your work, stated on the card |
 | **tool mix** | calls to that tool over all tool calls |
 | **streak** | consecutive local calendar days with activity; "current" only if it reaches today or yesterday |
+| **day coverage** | active days over the span from your first to your last active day, inclusive — the "33 of 41" in the header |
+| **longest stretch** | the longest run of calls with no pause over 30 minutes in it. Deliberately *not* the span of a session: Claude Code resumes sessions, so one session id can cover days of wall clock with a weekend in the middle |
 
-Skill and repo shares are weighted by **tokens written**, not total tokens. Totals are dominated by cache reads, which would flatten everything to roughly the same value.
+Skill, repo and model shares are weighted by **tokens written**, not total tokens. Totals are dominated by cache reads, which would flatten everything to roughly the same value.
 
 There are no costs or currency figures anywhere, deliberately. Pricing local usage at API rates values a behaviour that only exists *because* it is not billed that way, so the number would be fiction rather than a saving.
 

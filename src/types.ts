@@ -34,11 +34,21 @@ export interface SkillShare {
   share: number;
 }
 
+export interface ModelShare {
+  /** Display name, so two context tiers of one model collapse into one entry. */
+  model: string;
+  written: number;
+  /** Fraction of all tokens written, 0..1. */
+  share: number;
+}
+
 export interface Stats {
   calls: number;
   firstDay: string;
   lastDay: string;
   activeDays: number;
+  /** First to last active day, inclusive. Never smaller than activeDays. */
+  elapsedDays: number;
   written: number;
   contextRead: number;
   /** contextRead / written. The headline. */
@@ -58,6 +68,8 @@ export interface Stats {
   /** Up to four entries, descending by written. */
   topSkills: SkillShare[];
   topFourSkillShare: number;
+  /** Every model used, ranked by tokens written. */
+  models: ModelShare[];
 }
 
 export interface Retention {
@@ -104,6 +116,8 @@ export interface Rhythm {
   /** 24 buckets, local hours. */
   hours: number[];
   peakHour: number;
+  /** Longest run of calls with no pause over 30 minutes, in ms. */
+  longestStretchMs: number;
   /** Share of tokens written on Saturday or Sunday, 0..1. */
   weekendShare: number;
   currentStreak: number;
@@ -138,6 +152,13 @@ export interface Snapshot {
   sessions: number;
   topSkill: string | null;
   topTool: string | null;
+  /**
+   * Optional: absent from snapshots written before these fields existed.
+   * loadPrevious accepts version 1 only, so the version must never be bumped
+   * for an additive field — that would discard every snapshot on disk.
+   */
+  topModel?: string | null;
+  longestStretchMs?: number;
   toolCounts: Record<string, number>;
 }
 

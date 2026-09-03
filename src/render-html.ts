@@ -1,6 +1,6 @@
 import type { Retention, Rhythm, Signals, Stats } from './types.js';
 import { toolShares, sessionStats } from './rhythm.js';
-import { pct } from './render-terminal.js';
+import { duration, pct } from './render-terminal.js';
 
 /** Skill names come from disk and are interpolated into markup, so escape them. */
 function escapeHtml(value: string): string {
@@ -41,9 +41,17 @@ export function renderHtml(
   const streakBlock = rhythm
     ? `<h2>Rhythm</h2>
        <p class="big">${rhythm.currentStreak > 0 ? `${rhythm.currentStreak}-day streak` : 'no active streak'}
-         <span class="sub2">longest ${rhythm.longestStreak} &middot; peak hour ${rhythm.peakHour}:00 &middot; ${pct(rhythm.weekendShare)} weekend work</span></p>
+         <span class="sub2">longest ${rhythm.longestStreak} &middot; peak hour ${rhythm.peakHour}:00 &middot; ${pct(rhythm.weekendShare)} weekend work${rhythm.longestStretchMs > 0 ? ` &middot; ${duration(rhythm.longestStretchMs)} at a stretch` : ''}</span></p>
        <div class="spark">${spark}</div>`
     : '';
+  const modelBlock = (() => {
+    const model = stats.models[0];
+    if (!model) return '';
+    // Same rule as the repos: "of 1 models" is not a sentence.
+    const scope =
+      stats.models.length === 1 ? 'the only model you used' : `of ${stats.models.length} models you used`;
+    return `<div class="stat"><b>${pct(model.share)}</b><span>of your writing came from ${escapeHtml(model.model)}, ${scope}</span></div>`;
+  })();
   const toolBlock = (() => {
     if (!signals) return '';
     const tools = toolShares(signals.toolCounts).slice(0, 4);
@@ -110,7 +118,7 @@ export function renderHtml(
   .spark i { flex:1; background:var(--accent); opacity:.75; border-radius:1px; }
 </style></head>
 <body><main>
-  <p class="sub">CLAUDE CODE &middot; ${stats.activeDays} ACTIVE DAYS &middot; ${stats.firstDay} &rarr; ${stats.lastDay}</p>
+  <p class="sub">CLAUDE CODE &middot; ${stats.activeDays} OF ${stats.elapsedDays} DAYS ACTIVE &middot; ${stats.firstDay} &rarr; ${stats.lastDay}</p>
   <p class="ratio">${Math.round(stats.readWriteRatio)} : 1</p>
   <button type="button" id="share">Save as image</button>
   <canvas id="sheet" width="1200" height="630" hidden></canvas>
@@ -123,6 +131,7 @@ export function renderHtml(
     : stats.repoCount === 2
       ? `<div class="stat"><b>${pct(stats.topRepoShare)}</b><span>of your writing went to your busier repo, of 2</span></div>`
       : ''}
+  ${modelBlock}
   ${streakBlock}
   <h2>How you work &mdash; % of words written inside a skill (${pct(stats.skillAttributedShare)} of all work)</h2>
   <table>${rows}</table>

@@ -34,7 +34,7 @@ async function activeDays(tz: string): Promise<string> {
   const { stdout } = await exec(process.execPath, [cli], {
     env: { ...process.env, HOME: home, USERPROFILE: home, TZ: tz },
   });
-  return stdout.match(/(\d+) ACTIVE DAYS/)![1]!;
+  return stdout.match(/(\d+) OF \d+ DAYS ACTIVE/)![1]!;
 }
 
 test('an evening session counts as one local day, not two UTC days', async () => {
@@ -63,5 +63,5 @@ test('reports a clear message when files exist but hold no usable records', asyn
   await writeFile(join(project, 's.jsonl'), '{"type":"user","message":{}}\n');
   const { stdout } = await exec(process.execPath, [cli], { env: { ...process.env, HOME: root, USERPROFILE: root } });
   assert.match(stdout, /no usable/i);
-  assert.doesNotMatch(stdout, /0 ACTIVE DAYS/);
+  assert.doesNotMatch(stdout, /0 OF 0 DAYS ACTIVE/);
 });
