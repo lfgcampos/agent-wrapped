@@ -31,7 +31,7 @@
       "applicationCategory": "DeveloperApplication",
       "applicationSubCategory": "Command Line Tool",
       "operatingSystem": "Linux, macOS, Windows",
-      "description": "A local-first CLI that reads your own Claude Code transcripts and renders a wrapped card of how you work — read:write token ratio, cache share, subagent share, tool mix, streaks and hourly rhythm. No network calls, no dependencies, nothing leaves your machine.",
+      "description": "A local-first CLI that reads your own Claude Code transcripts and renders a wrapped card of how you work — read:write token ratio, cache share, subagent share, model mix, tool mix, streaks, hourly rhythm and longest unbroken working stretch. No network calls, no dependencies, nothing leaves your machine.",
       "url": "https://agent-wrapped.dev/",
       "downloadUrl": "https://www.npmjs.com/package/@lfgcampos/agent-wrapped",
       "installUrl": "https://www.npmjs.com/package/@lfgcampos/agent-wrapped",
@@ -64,7 +64,7 @@
           "name": "How do I see my Claude Code usage statistics?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Run npx @lfgcampos/agent-wrapped in a terminal. It reads the transcripts Claude Code already keeps on your machine and prints a summary card: token read:write ratio, cache share, subagent share, tool mix, session counts, streaks and your hourly rhythm. Nothing is uploaded and no model is called, so it returns in seconds."
+            "text": "Run npx @lfgcampos/agent-wrapped in a terminal. It reads the transcripts Claude Code already keeps on your machine and prints a summary card: token read:write ratio, cache share, subagent share, model mix, tool mix, session counts, streaks and your hourly rhythm. Nothing is uploaded and no model is called, so it returns in seconds."
           }
         },
         {
@@ -315,9 +315,23 @@
     <dt>42% / 6% subagents</dt>
     <dd>Share of calls, then share of words written. Reported as a pair on purpose:
         subagents read heavily and write little.</dd>
-    <dt>Skill and tool shares</dt>
+    <dt>96% Opus 5</dt>
+    <dd>Tokens written by that model over all tokens written. Two context tiers of
+        one model are one model, not two.</dd>
+    <dt>33 of 41 days active</dt>
+    <dd>Days you worked over the span from your first to your last active day. For
+        most people that span is the retention window rather than a period they
+        chose, which is why the window is printed beside it.</dd>
+    <dt>5h 48m at a stretch</dt>
+    <dd>The longest run of calls with no pause over 30 minutes in it. Deliberately
+        not the span of a session: Claude Code resumes sessions, so one session id
+        can cover days of wall clock with a weekend in the middle.</dd>
+    <dt>Skill, repo and model shares</dt>
     <dd>Weighted by tokens written, never by total tokens. Totals are dominated by
         cache reads, which would flatten everything to the same value.</dd>
+    <dt>Tool mix</dt>
+    <dd>Calls to that tool over all tool calls — the one share counted by calls
+        rather than by tokens written.</dd>
   </dl>
   <p>There are no costs anywhere, deliberately. Pricing local usage at API rates
      values a behaviour that only exists <em>because</em> it is not billed that way,
@@ -341,9 +355,9 @@
   <h3>How do I see my Claude Code usage statistics?</h3>
   <p>Run <code>npx @lfgcampos/agent-wrapped</code> in a terminal. It reads the transcripts Claude
      Code already keeps on your machine and prints a summary card: token read:write
-     ratio, cache share, subagent share, tool mix, session counts, streaks and your
-     hourly rhythm. Nothing is uploaded and no model is called, so it returns in
-     seconds.</p>
+     ratio, cache share, subagent share, model mix, tool mix, session counts, streaks
+     and your hourly rhythm. Nothing is uploaded and no model is called, so it
+     returns in seconds.</p>
 
   <h3>Where does Claude Code store its transcripts and conversation history?</h3>
   <p>In <code>~/.claude/projects</code>, as JSONL files — one directory per project,
