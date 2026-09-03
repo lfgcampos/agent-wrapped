@@ -34,6 +34,8 @@ export function buildSnapshot(
     overloads: signals.overloads,
     sessions: sessionStats(signals.sessionCalls).count,
     topSkill: stats.topSkills[0]?.skill ?? null,
+    topModel: stats.models[0]?.model ?? null,
+    longestStretchMs: rhythm.longestStretchMs,
     topTool: tools[0]?.tool ?? null,
     toolCounts: signals.toolCounts,
   };

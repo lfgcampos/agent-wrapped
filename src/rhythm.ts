@@ -2,6 +2,8 @@ import type { Rhythm, ToolShare, UsageRecord } from './types.js';
 import { localDay } from './stats.js';
 
 const DAY_MS = 86_400_000;
+/** A pause longer than this means you stopped, not that you paused. */
+const IDLE_GAP_MS = 30 * 60_000;
 
 function ratio(a: number, b: number): number {
   return b === 0 ? 0 : a / b;
@@ -21,6 +23,24 @@ function streaks(days: string[]): { longest: number; trailing: number } {
 }
 
 /**
+ * Longest run of calls with no idle gap in it.
+ *
+ * Not the span of a session id: Claude Code resumes sessions, so one id can
+ * span days of wall clock with a weekend in the middle. Records carry no
+ * session anyway, so this measures work rather than bookkeeping.
+ */
+function longestStretch(times: number[]): number {
+  const sorted = [...times].sort((a, b) => a - b);
+  let longest = 0;
+  let start = sorted[0] ?? 0;
+  for (let i = 1; i < sorted.length; i++) {
+    if (sorted[i]! - sorted[i - 1]! > IDLE_GAP_MS) start = sorted[i]!;
+    else longest = Math.max(longest, sorted[i]! - start);
+  }
+  return longest;
+}
+
+/**
  * Streaks, working hours and weekend load — all derived from timestamps, which
  * every user has regardless of how they work.
  *
@@ -31,6 +51,7 @@ export function computeRhythm(records: UsageRecord[], now: Date = new Date()): R
   let weekendWritten = 0;
   let written = 0;
   const daySet = new Set<string>();
+  const times: number[] = [];
 
   for (const r of records) {
     if (!r.ts) continue;
@@ -40,6 +61,7 @@ export function computeRhythm(records: UsageRecord[], now: Date = new Date()): R
     written += r.output;
     const dow = d.getDay();
     if (dow === 0 || dow === 6) weekendWritten += r.output;
+    times.push(d.getTime());
     daySet.add(localDay(r.ts));
   }
 
@@ -55,7 +77,8 @@ export function computeRhythm(records: UsageRecord[], now: Date = new Date()): R
   let peakHour = 0;
   for (let h = 1; h < 24; h++) if ((hours[h] ?? 0) > (hours[peakHour] ?? 0)) peakHour = h;
 
-  return { hours, peakHour, weekendShare: ratio(weekendWritten, written), currentStreak, longestStreak: longest };
+  const longestStretchMs = longestStretch(times);
+  return { hours, peakHour, longestStretchMs, weekendShare: ratio(weekendWritten, written), currentStreak, longestStreak: longest };
 }
 
 export function toolShares(counts: Record<string, number>): ToolShare[] {

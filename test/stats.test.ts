@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { computeStats } from '../src/stats.js';
+import { computeStats, displayModel } from '../src/stats.js';
 import type { UsageRecord } from '../src/types.js';
 
 function rec(over: Partial<UsageRecord> = {}): UsageRecord {
@@ -85,10 +85,92 @@ test('empty input produces zeroes rather than NaN', () => {
   assert.equal(s.readWriteRatio, 0);
   assert.equal(s.cacheShare, 0);
   assert.equal(s.topSkills.length, 0);
+  assert.equal(s.models.length, 0);
+  assert.equal(s.elapsedDays, 0);
 });
 
 test('single-repo users get a top-repo share rather than nonsense about three repos', () => {
   const s = computeStats([rec({ project: 'only', output: 100 })]);
   assert.equal(s.repoCount, 1);
   assert.equal(s.topRepoShare, 1);
+});
+
+// Model ids arrive in two naming eras that order family and version oppositely
+// (claude-3-5-haiku-... against claude-haiku-4-5-...), so these assert on both.
+test('drops the release date from a model id', () => {
+  assert.equal(displayModel('claude-sonnet-4-5-20250929'), 'Sonnet 4.5');
+});
+
+test('merges context-window tiers into a single model', () => {
+  assert.equal(displayModel('claude-opus-5[1m]'), 'Opus 5');
+  assert.equal(displayModel('claude-opus-5'), 'Opus 5');
+});
+
+test('reads the old naming order, where the version came before the family', () => {
+  assert.equal(displayModel('claude-3-5-haiku-20241022'), 'Haiku 3.5');
+  assert.equal(displayModel('claude-3-opus-20240229'), 'Opus 3');
+});
+
+test('names a family it has never seen rather than giving up on it', () => {
+  assert.equal(displayModel('claude-fable-5-1'), 'Fable 5.1');
+});
+
+test('returns an unrecognisable id unchanged rather than inventing a name', () => {
+  assert.equal(displayModel('some-local-model'), 'some-local-model');
+  assert.equal(displayModel(''), '');
+});
+
+test('strips the vendor prefix and version suffix Bedrock and Vertex add', () => {
+  assert.equal(displayModel('us.anthropic.claude-opus-4-5-20251101-v1:0'), 'Opus 4.5');
+});
+
+test('model shares are weighted by tokens written, over all writing', () => {
+  const s = computeStats([
+    rec({ model: 'claude-opus-5', output: 60 }),
+    rec({ model: 'claude-sonnet-4-5-20250929', output: 30 }),
+    rec({ model: 'claude-haiku-4-5-20251001', output: 10 }),
+  ]);
+  assert.equal(s.models.length, 3);
+  assert.equal(s.models[0]!.model, 'Opus 5');
+  assert.equal(s.models[0]!.share, 0.6);
+  assert.equal(s.models[2]!.model, 'Haiku 4.5');
+});
+
+test('one model on two context tiers is one share, not two', () => {
+  const s = computeStats([
+    rec({ model: 'claude-opus-5', output: 50 }),
+    rec({ model: 'claude-opus-5[1m]', output: 50 }),
+  ]);
+  assert.equal(s.models.length, 1);
+  assert.equal(s.models[0]!.share, 1);
+});
+
+test('a model that wrote nothing still counts as a model that was used', () => {
+  // Ranked last rather than dropped: it was reached for, and the count says so.
+  const s = computeStats([
+    rec({ model: 'claude-opus-5', output: 100 }),
+    rec({ model: 'claude-haiku-4-5-20251001', output: 0 }),
+  ]);
+  assert.equal(s.models.length, 2);
+  assert.equal(s.models[1]!.share, 0);
+});
+
+test('elapsed days spans first to last inclusive, so one day of work is one day', () => {
+  const s = computeStats([rec({ ts: '2026-08-01T10:00:00.000' })]);
+  assert.equal(s.activeDays, 1);
+  assert.equal(s.elapsedDays, 1);
+});
+
+test('elapsed days counts the days worked through, not the days worked on', () => {
+  const s = computeStats([
+    rec({ ts: '2026-07-16T10:00:00.000' }),
+    rec({ ts: '2026-08-24T09:00:00.000' }),
+  ]);
+  assert.equal(s.activeDays, 2);
+  assert.equal(s.elapsedDays, 40);
+  assert.ok(s.activeDays <= s.elapsedDays);
+});
+
+test('empty input has no elapsed days rather than one', () => {
+  assert.equal(computeStats([]).elapsedDays, 0);
 });

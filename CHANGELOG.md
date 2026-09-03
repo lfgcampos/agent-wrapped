@@ -6,6 +6,17 @@ Each released version needs a section here — the release workflow reads it as 
 
 ## [Unreleased]
 
+### Added
+
+- **Which model did the writing.** The card names the model most of your words came from, as a share of all tokens written, next to how many models you used at all. The model was already on every transcript record and was being discarded before it reached the card. Ids are normalised to the name a person would say — `claude-sonnet-4-5-20250929` becomes `Sonnet 4.5` — and two context tiers of one model (`claude-opus-5` and `claude-opus-5[1m]`) count as one model rather than two. Two naming eras are in play and they order the parts oppositely, so the family is read as the first non-numeric segment rather than by position; an id that still does not parse is printed as it arrived, because a wrong model name is worse than a raw one.
+- **Day coverage in the header.** `33 ACTIVE DAYS` became `33 OF 41 DAYS ACTIVE` — the same figure, against the span it was measured over. For most people that span is their retention window rather than a period they chose, which is why the window itself is printed on the same line.
+- **Longest unbroken stretch**, on the rhythm line: the longest run of calls with no pause over 30 minutes in it, as `5h 48m at a stretch`. Deliberately *not* the span of a session. Claude Code resumes sessions, so one session id can cover days of wall clock with a weekend in the middle, which measures bookkeeping rather than work.
+- **Both new figures are recorded in snapshots**, so a later run can show them moving. They are optional fields on the existing version 1 snapshot rather than a version 2, because `loadPrevious` accepts version 1 only — bumping it would discard every snapshot already on disk. A delta against a snapshot written before these fields omits those rows instead of inventing them.
+
+### Changed
+
+- **`detectRetention` no longer measures the history window itself.** It reads the span `computeStats` already computed, so the "N days of history" in the retention warning and the day coverage in the header cannot drift apart.
+
 ## [0.2.0]
 
 ### Added

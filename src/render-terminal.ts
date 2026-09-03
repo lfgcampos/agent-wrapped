@@ -38,6 +38,13 @@ function sparkline(hours: number[]): string {
   return hours.map((n) => SPARK[Math.min(7, Math.round((n / max) * 7))]).join('');
 }
 
+/** Whole minutes: a stretch measured to the second implies a precision it lacks. */
+export function duration(ms: number): string {
+  const minutes = Math.round(ms / 60_000);
+  const hours = Math.floor(minutes / 60);
+  return hours > 0 ? `${hours}h ${minutes % 60}m` : `${minutes}m`;
+}
+
 function hour12(h: number): string {
   const suffix = h < 12 ? 'am' : 'pm';
   const display = h % 12 === 0 ? 12 : h % 12;
@@ -53,7 +60,7 @@ export function renderTerminal(
   savedTo?: string | null,
 ): string {
   const lines: string[] = [];
-  const header = `CLAUDE CODE · ${stats.activeDays} ACTIVE DAYS`;
+  const header = `CLAUDE CODE · ${stats.activeDays} OF ${stats.elapsedDays} DAYS ACTIVE`;
   lines.push('');
   lines.push(`  ${header}${' '.repeat(Math.max(2, 58 - header.length))}${stats.firstDay} → ${stats.lastDay}`);
   lines.push('');
@@ -66,7 +73,8 @@ export function renderTerminal(
       rhythm.currentStreak > 0
         ? `${rhythm.currentStreak}-day streak`
         : `no streak right now · longest was ${rhythm.longestStreak}`;
-    lines.push(`  ${streak} · longest ${rhythm.longestStreak} · you work most at ${hour12(rhythm.peakHour)}`);
+    const stretch = rhythm.longestStretchMs > 0 ? ` · ${duration(rhythm.longestStretchMs)} at a stretch` : '';
+    lines.push(`  ${streak} · longest ${rhythm.longestStreak}${stretch} · you work most at ${hour12(rhythm.peakHour)}`);
     lines.push(`  ${sparkline(rhythm.hours)}   ${pct(rhythm.weekendShare)} of your writing is weekend work`);
     lines.push('  00                      23');
   }
@@ -80,6 +88,13 @@ export function renderTerminal(
     lines.push(`  ${pct(stats.topThreeShare).padStart(4)}   of your writing went to 3 of your ${stats.repoCount} repos`);
   } else if (stats.repoCount === 2) {
     lines.push(`  ${pct(stats.topRepoShare).padStart(4)}   of your writing went to your busier repo, of 2`);
+  }
+  // Same rule as the repos above: "of 1 models" is not a sentence.
+  const model = stats.models[0];
+  if (model) {
+    const scope =
+      stats.models.length === 1 ? 'the only model you used' : `of ${stats.models.length} models you used`;
+    lines.push(`  ${pct(model.share).padStart(4)}   of your writing came from ${model.model}, ${scope}`);
   }
 
   if (stats.topSkills.length > 0) {
@@ -145,9 +160,16 @@ export function renderTerminal(
     lines.push(`     written   ${arrow(stats.written, p.written, (n) => `${(n / 1e6).toFixed(1)}M`)}`);
     if (rhythm) {
       lines.push(`     streak    ${arrow(rhythm.currentStreak, p.currentStreak, (n) => `${Math.round(n)} days`)}`);
+      // Omitted rather than faked when the previous snapshot predates the field.
+      if (p.longestStretchMs !== undefined) {
+        lines.push(`     stretch   ${arrow(rhythm.longestStretchMs, p.longestStretchMs, duration)}`);
+      }
     }
     if (p.topSkill && stats.topSkills[0] && p.topSkill !== stats.topSkills[0].skill) {
       lines.push(`     top skill ${shortSkill(p.topSkill)} → ${shortSkill(stats.topSkills[0].skill)}`);
+    }
+    if (p.topModel && stats.models[0] && p.topModel !== stats.models[0].model) {
+      lines.push(`     top model ${p.topModel} → ${stats.models[0].model}`);
     }
     if (delta.gapDays > 0) {
       lines.push('');

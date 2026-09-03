@@ -7,13 +7,13 @@ import { buildSnapshot, computeDelta, loadPrevious, saveSnapshot, snapshotDir } 
 import type { Rhythm, Signals, Snapshot, Stats } from '../src/types.js';
 
 const stats = (over: Partial<Stats> = {}): Stats => ({
-  calls: 100, firstDay: '2026-08-01', lastDay: '2026-08-31', activeDays: 20,
+  calls: 100, firstDay: '2026-08-01', lastDay: '2026-08-31', activeDays: 20, elapsedDays: 31,
   written: 1000, contextRead: 10000, readWriteRatio: 10, cacheShare: 0.9,
   subagentCallShare: 0.4, subagentWrittenShare: 0.06, repoCount: 3, topThreeShare: 0.9,
   topRepoShare: 0.5, skillAttributedShare: 0.2, distinctSkills: 2,
-  topSkills: [{ skill: 'brainstorming', written: 10, share: 1 }], topFourSkillShare: 1, ...over,
+  topSkills: [{ skill: 'brainstorming', written: 10, share: 1 }], topFourSkillShare: 1, models: [], ...over,
 });
-const rhythm: Rhythm = { hours: new Array(24).fill(1), peakHour: 15, weekendShare: 0.1, currentStreak: 3, longestStreak: 9 };
+const rhythm: Rhythm = { hours: new Array(24).fill(1), peakHour: 15, longestStretchMs: 4 * 3_600_000, weekendShare: 0.1, currentStreak: 3, longestStreak: 9 };
 const signals: Signals = { toolCounts: { Bash: 10, Edit: 5 }, userMessages: 42, limitEvents: [], overloads: 2, sessionCalls: { a: 5 } };
 
 test('snapshots are stored outside ~/.claude so its cleanup cannot delete them', () => {
@@ -70,4 +70,32 @@ test('continuous coverage reports no gap', () => {
   const prev = { ...buildSnapshot(stats(), rhythm, signals, '2026-07-31'), lastDay: '2026-07-31' } as Snapshot;
   const d = computeDelta(prev, stats({ firstDay: '2026-08-01' }));
   assert.equal(d.gapDays, 0);
+});
+
+test('a snapshot records the top model and the longest stretch', () => {
+  const s = buildSnapshot(
+    stats({ models: [{ model: 'Opus 5', written: 100, share: 1 }] }),
+    rhythm,
+    signals,
+    '2026-09-01',
+  );
+  assert.equal(s.topModel, 'Opus 5');
+  assert.equal(s.longestStretchMs, 4 * 3_600_000);
+});
+
+test('a snapshot with no models records no top model rather than an empty name', () => {
+  assert.equal(buildSnapshot(stats(), rhythm, signals, '2026-09-01').topModel, null);
+});
+
+test('a snapshot written before these fields existed still loads', async () => {
+  // The version must not be bumped for an additive field: loadPrevious rejects
+  // anything that is not version 1, so bumping discards every stored snapshot.
+  const dir = await mkdtemp(join(tmpdir(), 'aw-snap-'));
+  const old = { ...buildSnapshot(stats(), rhythm, signals, '2026-08-01') } as Record<string, unknown>;
+  delete old.topModel;
+  delete old.longestStretchMs;
+  await writeFile(join(dir, '2026-08-01.json'), JSON.stringify(old), 'utf8');
+  const loaded = await loadPrevious(dir, '2026-09-01');
+  assert.ok(loaded, 'an older snapshot is still readable');
+  assert.equal(loaded.longestStretchMs, undefined);
 });

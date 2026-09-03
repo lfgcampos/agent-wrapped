@@ -17,13 +17,6 @@ const RISK_THRESHOLD_DAYS = 25;
 const DISK_BUDGET_BYTES = 2_000_000_000;
 const HORIZONS = [60, 90, 180, 365];
 
-function daysBetween(firstDay: string, lastDay: string): number {
-  if (!firstDay || !lastDay) return 0;
-  const ms = Date.parse(lastDay) - Date.parse(firstDay);
-  if (!Number.isFinite(ms)) return 0;
-  return Math.round(ms / 86_400_000) + 1; // inclusive of both endpoints
-}
-
 /**
  * Decide whether the user is silently losing history.
  *
@@ -43,7 +36,9 @@ export async function detectRetention(
   } catch {
     // absent or malformed: the default is in force
   }
-  const windowDays = daysBetween(stats.firstDay, stats.lastDay);
+  // Same span computeStats already measured — deriving it twice lets the two
+  // figures drift apart on the same card.
+  const windowDays = stats.elapsedDays;
   const unconfigured = cleanupPeriodDays === null || cleanupPeriodDays <= DEFAULT_RETENTION_DAYS;
 
   const bytesOnDisk = files.reduce((n, f) => n + f.size, 0);

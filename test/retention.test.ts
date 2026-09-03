@@ -7,10 +7,12 @@ import { detectRetention } from '../src/retention.js';
 import type { Stats } from '../src/types.js';
 
 const stats = (firstDay: string, lastDay: string): Stats => ({
-  calls: 1, firstDay, lastDay, activeDays: 1, written: 1, contextRead: 1,
+  calls: 1, firstDay, lastDay, activeDays: 1,
+  // Derived rather than hardcoded: detectRetention reads the span from here.
+  elapsedDays: Math.round((Date.parse(lastDay) - Date.parse(firstDay)) / 86_400_000) + 1, written: 1, contextRead: 1,
   readWriteRatio: 1, cacheShare: 0, subagentCallShare: 0, subagentWrittenShare: 0,
   repoCount: 1, topThreeShare: 1, topRepoShare: 1, skillAttributedShare: 0, distinctSkills: 0,
-  topSkills: [], topFourSkillShare: 0,
+  topSkills: [], topFourSkillShare: 0, models: [],
 });
 
 async function settings(contents: string | null): Promise<string> {

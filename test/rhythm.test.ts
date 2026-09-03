@@ -72,3 +72,52 @@ test('empty input never yields NaN', () => {
   assert.equal(r.weekendShare, 0);
   assert.equal(sessionStats({}).median, 0);
 });
+
+test('calls with no long pause between them are a single stretch', () => {
+  const r = computeRhythm([
+    rec('2026-08-10T09:00:00.000'),
+    rec('2026-08-10T09:10:00.000'),
+    rec('2026-08-10T09:25:00.000'),
+  ]);
+  assert.equal(r.longestStretchMs, 25 * 60_000);
+});
+
+test('a pause longer than the idle threshold ends the stretch', () => {
+  const r = computeRhythm([
+    rec('2026-08-10T09:00:00.000'),
+    rec('2026-08-10T09:10:00.000'),
+    rec('2026-08-10T10:00:00.000'),
+    rec('2026-08-10T10:05:00.000'),
+  ]);
+  assert.equal(r.longestStretchMs, 10 * 60_000);
+});
+
+test('a pause of exactly the idle threshold is still the same stretch', () => {
+  const held = computeRhythm([rec('2026-08-10T09:00:00.000'), rec('2026-08-10T09:30:00.000')]);
+  assert.equal(held.longestStretchMs, 30 * 60_000);
+  const broken = computeRhythm([rec('2026-08-10T09:00:00.000'), rec('2026-08-10T09:30:00.001')]);
+  assert.equal(broken.longestStretchMs, 0);
+});
+
+test('a lone call is a stretch of no duration, not a stretch of one call', () => {
+  assert.equal(computeRhythm([rec('2026-08-10T09:00:00.000')]).longestStretchMs, 0);
+});
+
+test('the stretch is found regardless of the order records arrive in', () => {
+  const r = computeRhythm([
+    rec('2026-08-10T09:25:00.000'),
+    rec('2026-08-10T09:00:00.000'),
+    rec('2026-08-10T09:10:00.000'),
+  ]);
+  assert.equal(r.longestStretchMs, 25 * 60_000);
+});
+
+test('records with unusable timestamps do not join a stretch', () => {
+  const r = computeRhythm([
+    rec('2026-08-10T09:00:00.000'),
+    rec(''),
+    rec('not a date'),
+    rec('2026-08-10T09:10:00.000'),
+  ]);
+  assert.equal(r.longestStretchMs, 10 * 60_000);
+});
