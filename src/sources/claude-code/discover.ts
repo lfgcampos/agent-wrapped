@@ -1,6 +1,6 @@
 import { readdir, stat } from 'node:fs/promises';
 import { join, sep } from 'node:path';
-import type { TranscriptFile } from './types.js';
+import type { TranscriptFile } from '../../types.js';
 
 /**
  * Reduce an encoded transcript directory name to a stable grouping key.

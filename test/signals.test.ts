@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { mkdtemp, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { parseAll } from '../src/parse.js';
+import { parseAll } from '../src/sources/claude-code/parse.js';
 import type { TranscriptFile } from '../src/types.js';
 
 async function file(contents: string): Promise<TranscriptFile[]> {

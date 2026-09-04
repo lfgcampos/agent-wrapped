@@ -104,7 +104,7 @@
           "name": "Does it work with Cursor, Codex, or other coding agents?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Not yet. It reads Claude Code's transcript format specifically. Support for other agents is a reasonable feature request — open an issue on GitHub."
+            "text": "Not yet — Claude Code is the only implementation today. Architecturally it is no longer Claude-Code-only: agents sit behind a source interface, and every agent found on your machine is read without a flag, so adding one is a new source rather than a rewrite. Cursor and Codex support are tracked as issue 3 and issue 4, not something to file a new issue for."
           }
         }
       ]
@@ -332,6 +332,9 @@
     <dt>Tool mix</dt>
     <dd>Calls to that tool over all tool calls — the one share counted by calls
         rather than by tokens written.</dd>
+    <dt>Omitted sections</dt>
+    <dd>A source that cannot know a figure omits that section rather than
+        printing 0%. An absent panel means "not knowable here", never "none".</dd>
   </dl>
   <p>There are no costs anywhere, deliberately. Pricing local usage at API rates
      values a behaviour that only exists <em>because</em> it is not billed that way,
@@ -342,6 +345,9 @@
     <dt>--since 30d</dt>
     <dd>Limit to a window: <code>30d</code>, <code>12w</code>, <code>6m</code>, or a
         date. Faster than a full run — older transcripts are never opened.</dd>
+    <dt>--source claude-code</dt>
+    <dd>Read only one agent. Without it, every agent found on the machine is
+        read — detection, not configuration.</dd>
     <dt>--html</dt>
     <dd>Write a self-contained page to <code>~/.agent-wrapped/card.html</code>, with a Save-as-image button that renders a shareable PNG in your browser.</dd>
     <dt>--json</dt>
@@ -387,10 +393,13 @@
      with no model call, in a form you can share.</p>
 
   <h3>Does it work with Cursor, Codex, or other coding agents?</h3>
-  <p>Not yet. It reads Claude Code&rsquo;s transcript format specifically. Support for
-     other agents is a reasonable feature request —
-     <a href="https://github.com/lfgcampos/agent-wrapped/issues">open an issue</a> on
-     GitHub.</p>
+  <p>Not yet — Claude Code is the only implementation today. Architecturally it is
+     no longer Claude-Code-only: agents sit behind a source interface, and every
+     agent found on your machine is read without a flag, so adding one is a new
+     source rather than a rewrite. Cursor and Codex support are tracked as
+     <a href="https://github.com/lfgcampos/agent-wrapped/issues/3">issue 3</a> and
+     <a href="https://github.com/lfgcampos/agent-wrapped/issues/4">issue 4</a>, not
+     something to file a new issue for.</p>
 
   <h2>See also</h2>
   <ul>

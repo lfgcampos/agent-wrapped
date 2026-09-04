@@ -1,7 +1,7 @@
 import { createReadStream } from 'node:fs';
 import { createInterface } from 'node:readline';
 import { basename } from 'node:path';
-import type { LimitEvent, Signals, TranscriptFile, UsageRecord } from './types.js';
+import type { LimitEvent, Signals, TranscriptFile, UsageRecord } from '../../types.js';
 
 function num(value: unknown): number {
   return typeof value === 'number' && Number.isFinite(value) ? value : 0;

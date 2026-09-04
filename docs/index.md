@@ -49,6 +49,7 @@ Node 22 or newer. No install, no account, no config.
 | Flag | What it does |
 |---|---|
 | `--since <window>` | Limit to a window: `30d`, `12w`, `6m`, or a date like `2026-08-01`. Faster than a full run — transcripts older than the cutoff are never opened. |
+| `--source <id>` | Read only one agent, e.g. `claude-code`. Without it, every agent found on the machine is read — detection, not configuration. |
 | `--html` | Write a self-contained page to `~/.agent-wrapped/card.html`, with a Save-as-image button that renders a 1200×630 PNG in your browser. |
 | `--json` | Print the raw stats, for your own charts. |
 | `--no-save` | Skip writing this run's snapshot. |
@@ -71,6 +72,7 @@ Every percentage names its denominator, because the same figure can be honest tw
 | streak | consecutive local calendar days with activity; "current" only if it reaches today or yesterday |
 | day coverage | active days over the span from your first to your last active day, inclusive — the "33 of 41" in the header |
 | longest stretch | the longest run of calls with no pause over 30 minutes in it. Deliberately *not* the span of a session: Claude Code resumes sessions, so one session id can cover days of wall clock with a weekend in the middle |
+| omitted sections | a source that cannot know a figure omits it rather than printing zero — an absent panel means "not knowable here", never "none" |
 
 Skill, repo and model shares are weighted by tokens written, not total tokens. Totals are dominated by cache reads, which would flatten everything to roughly the same value.
 
@@ -112,7 +114,7 @@ They answer different questions. `/insights` asks a model to write a narrative a
 
 ### Does it work with Cursor, Codex, or other coding agents?
 
-Not yet. It reads Claude Code's transcript format specifically. Support for other agents is a reasonable feature request — open an issue on GitHub.
+Not yet — Claude Code is the only implementation today. Architecturally it is no longer Claude-Code-only: agents sit behind a source interface, and every agent found on your machine is read without a flag, so adding one is a new source rather than a rewrite. Cursor and Codex support are tracked as [issue 3](https://github.com/lfgcampos/agent-wrapped/issues/3) and [issue 4](https://github.com/lfgcampos/agent-wrapped/issues/4), not something to file a new issue for.
 
 ### What are the requirements?
 

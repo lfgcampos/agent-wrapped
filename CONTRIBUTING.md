@@ -29,6 +29,8 @@ These exist for reasons that are easy to miss and expensive to rediscover.
 
 **Percentages state their denominator.** "14% of skill work" and "2% of all work" can be the same number. If a panel shows a share, the label says a share of what.
 
+**A source declares what it cannot know.** No other agent has Claude Code's skill attribution, and only Anthropic's API reports cache reads as a separate figure. A source that cannot populate a field lists it in `unsupported`, and the renderer omits that section entirely. Never let a missing figure render as `0%` — that is a wrong number, not a missing one, and it contradicts the denominator rule above.
+
 **Local calendar days, never UTC string slicing.** Timestamps are UTC. Slicing the ISO string gives every user the UTC answer and splits an evening session across two days for anyone west of Greenwich. This broke streaks once already.
 
 ## Testing

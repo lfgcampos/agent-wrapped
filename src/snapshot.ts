@@ -41,8 +41,53 @@ export function buildSnapshot(
   };
 }
 
-/** Most recent snapshot taken strictly before `today`. */
-export async function loadPrevious(dir: string, today: string): Promise<Snapshot | null> {
+/**
+ * Snapshots are named YYYY-MM-DD.<source>.json.
+ *
+ * A bare YYYY-MM-DD.json predates multi-source support and can only have come
+ * from Claude Code, so it is read as such rather than migrated — rewriting
+ * someone's stored history to add a word to a filename buys nothing.
+ *
+ * Namespacing by filename also closes the cross-source delta hazard by
+ * construction: computeDelta cannot compare Codex against Claude Code, because
+ * loadPrevious never opens the other source's file.
+ */
+const DAY = /^(\d{4}-\d{2}-\d{2})/;
+
+function belongsTo(name: string, sourceId: string): boolean {
+  if (!name.endsWith('.json')) return false;
+  const rest = name.replace(DAY, '').replace(/\.json$/, '');
+  if (rest === `.${sourceId}`) return true;
+  return rest === '' && sourceId === 'claude-code';
+}
+
+/**
+ * Newest date first; a plain string sort is only chronologically correct when
+ * two filenames' date prefixes differ. When a bare and a namespaced file share
+ * the same date, string order puts the bare name after the namespaced one
+ * ("2026-09-03.claude-code.json" < "2026-09-03.json", since 'c' < 'j'), which
+ * would silently surface the stale pre-upgrade bare file as "most recent".
+ *
+ * A bare filename can only predate multi-source support (see belongsTo), so
+ * on any given day the namespaced file for that day was necessarily written
+ * later — it must win the tie.
+ */
+function byNewest(a: string, b: string): number {
+  const dateA = a.slice(0, 10);
+  const dateB = b.slice(0, 10);
+  if (dateA !== dateB) return dateA < dateB ? 1 : -1;
+  const bareA = a.slice(10) === '.json';
+  const bareB = b.slice(10) === '.json';
+  if (bareA === bareB) return 0;
+  return bareA ? 1 : -1;
+}
+
+/** Most recent snapshot for one source, taken strictly before `today`. */
+export async function loadPrevious(
+  dir: string,
+  today: string,
+  sourceId: string,
+): Promise<Snapshot | null> {
   let names: string[];
   try {
     names = await readdir(dir);
@@ -50,9 +95,9 @@ export async function loadPrevious(dir: string, today: string): Promise<Snapshot
     return null;
   }
   const candidates = names
-    .filter((n) => n.endsWith('.json') && n.slice(0, 10) < today)
-    .sort();
-  for (const name of candidates.reverse()) {
+    .filter((n) => DAY.test(n) && n.slice(0, 10) < today && belongsTo(n, sourceId))
+    .sort(byNewest);
+  for (const name of candidates) {
     try {
       const parsed = JSON.parse(await readFile(join(dir, name), 'utf8'));
       if (parsed?.version === 1) return parsed as Snapshot;
@@ -63,10 +108,14 @@ export async function loadPrevious(dir: string, today: string): Promise<Snapshot
   return null;
 }
 
-/** Re-running on the same day overwrites rather than accumulating duplicates. */
-export async function saveSnapshot(dir: string, snapshot: Snapshot): Promise<string> {
+/** Re-running on the same day for the same source overwrites rather than accumulating. */
+export async function saveSnapshot(
+  dir: string,
+  snapshot: Snapshot,
+  sourceId: string,
+): Promise<string> {
   await mkdir(dir, { recursive: true });
-  const path = join(dir, `${snapshot.takenAt}.json`);
+  const path = join(dir, `${snapshot.takenAt}.${sourceId}.json`);
   await writeFile(path, JSON.stringify(snapshot, null, 2), 'utf8');
   return path;
 }

@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { mkdtemp, mkdir, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { discover, normalizeProject } from '../src/discover.js';
+import { discover, normalizeProject } from '../src/sources/claude-code/discover.js';
 
 async function fixture(): Promise<string> {
   const root = await mkdtemp(join(tmpdir(), 'aw-'));

@@ -1,5 +1,5 @@
 import { readFile } from 'node:fs/promises';
-import type { Retention, Stats, TranscriptFile } from './types.js';
+import type { Disk, Pruning, Stats } from '../../types.js';
 
 /** Claude Code's default transcript retention, in days. */
 const DEFAULT_RETENTION_DAYS = 30;
@@ -22,12 +22,15 @@ const HORIZONS = [60, 90, 180, 365];
  *
  * An absent or unparseable settings file means the default retention applies,
  * which is the common case and the whole reason this check exists.
+ *
+ * Takes `disk` because every figure it suggests is derived from the growth
+ * rate: the advice is "how many days fit in a disk budget at your rate".
  */
-export async function detectRetention(
+export async function detectPruning(
   settingsPath: string,
   stats: Stats,
-  files: TranscriptFile[] = [],
-): Promise<Retention> {
+  disk: Disk,
+): Promise<Pruning | null> {
   let cleanupPeriodDays: number | null = null;
   try {
     const parsed = JSON.parse(await readFile(settingsPath, 'utf8'));
@@ -36,25 +39,17 @@ export async function detectRetention(
   } catch {
     // absent or malformed: the default is in force
   }
-  // Same span computeStats already measured — deriving it twice lets the two
-  // figures drift apart on the same card.
-  const windowDays = stats.elapsedDays;
   const unconfigured = cleanupPeriodDays === null || cleanupPeriodDays <= DEFAULT_RETENTION_DAYS;
 
-  const bytesOnDisk = files.reduce((n, f) => n + f.size, 0);
-  const bytesPerDay = stats.activeDays > 0 ? bytesOnDisk / stats.activeDays : 0;
   // Largest horizon whose projected cost still fits the budget; never below the smallest.
-  const affordable = HORIZONS.filter((d) => bytesPerDay * d <= DISK_BUDGET_BYTES);
+  const affordable = HORIZONS.filter((d) => disk.bytesPerDay * d <= DISK_BUDGET_BYTES);
   const suggestedDays = affordable.length > 0 ? affordable[affordable.length - 1]! : HORIZONS[0]!;
 
   return {
-    windowDays,
     cleanupPeriodDays,
-    atRisk: unconfigured && windowDays >= RISK_THRESHOLD_DAYS,
-    bytesOnDisk,
-    bytesPerDay,
+    atRisk: unconfigured && stats.elapsedDays >= RISK_THRESHOLD_DAYS,
     suggestedDays,
-    suggestedBytes: bytesPerDay * suggestedDays,
-    yearBytes: bytesPerDay * 365,
+    suggestedBytes: disk.bytesPerDay * suggestedDays,
+    yearBytes: disk.bytesPerDay * 365,
   };
 }

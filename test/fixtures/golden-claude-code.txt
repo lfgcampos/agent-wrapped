@@ -1,0 +1,35 @@
+
+  CLAUDE CODE · 2 OF 3 DAYS ACTIVE                          2026-08-01 → 2026-08-03
+
+         112 : 1
+         tokens read for every token written
+
+
+  1-day streak · longest 1 · 12m at a stretch · you work most at 9am
+  ▁▁▁▁▁▁▁▁▁█▁▁▁▁▆▁▁▁▁▁▁▁▁▁   61% of your writing is weekend work
+  00                      23
+
+   99%   of what it read was cache — the same context, re-sent
+   20%   of your calls were subagents…
+    4%   …but they wrote only that share of the words
+   61%   of your writing went to your busier repo, of 2
+   70%   of your writing came from Opus 5, of 3 models you used
+
+  HOW YOU WORK   (% of words written inside a skill — 39% of all work)
+  ██████████████  67%  writing-plans
+  ███████░░░░░░░  33%  brainstorming
+                       …2 skills used · top 4 = 100% of skill work
+
+  WHAT YOU REACH FOR                    (% of 15 tool calls)
+  ██████████████  33%  Bash
+  ███████████░░░  27%  Read
+  ████████░░░░░░  20%  Edit
+  █████░░░░░░░░░  13%  Write
+
+  2.5 agent turns for every message you send · 3 sessions, longest 2 turns
+
+  BATTLE SCARS
+     1   times you hit the usage limit, across 1 week
+     1   times the server was overloaded on you
+
+  agent-wrapped.dev

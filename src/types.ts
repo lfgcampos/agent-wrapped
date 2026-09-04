@@ -72,21 +72,29 @@ export interface Stats {
   models: ModelShare[];
 }
 
-export interface Retention {
-  /** Days between first and last record, inclusive. */
-  windowDays: number;
+/** Disk accounting. Generic: every source reports file sizes. */
+export interface Disk {
   /** Total bytes of transcripts on disk. */
   bytesOnDisk: number;
   /** Average bytes written per active day. */
   bytesPerDay: number;
+}
+
+/**
+ * Pruning advice, for an agent that deletes history on a schedule.
+ *
+ * Claude-Code-specific: `cleanupPeriodDays` has no equivalent elsewhere, so a
+ * source without a retention setting returns null rather than a zeroed object.
+ */
+export interface Pruning {
+  /** From ~/.claude/settings.json, null when unset. */
+  cleanupPeriodDays: number | null;
   /** Retention horizon that fits the disk budget, in days. */
   suggestedDays: number;
   /** Projected disk cost of `suggestedDays`, in bytes. */
   suggestedBytes: number;
   /** Projected disk cost of keeping a full year, in bytes. */
   yearBytes: number;
-  /** From ~/.claude/settings.json, null when unset. */
-  cleanupPeriodDays: number | null;
   /** True when history is being silently deleted. */
   atRisk: boolean;
 }

@@ -1,7 +1,7 @@
 {
   "name": "@lfgcampos/agent-wrapped",
   "version": "0.3.0",
-  "description": "Local-first wrapped card for your Claude Code usage. Nothing leaves your machine.",
+  "description": "Local-first wrapped card for the coding agents on your machine — Claude Code is the only one implemented today. Nothing leaves your machine.",
   "keywords": [
     "claude",
     "claude-code",
