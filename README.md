@@ -49,7 +49,7 @@ Add `--html` for a self-contained page at `~/.agent-wrapped/card.html`. It has a
 - **Zero runtime dependencies.** No third-party code to audit but this.
 - **It is about a thousand lines.** Read `src/` and confirm both claims yourself.
 
-It reads exactly two paths, both read-only: `~/.claude/projects` (your transcripts) and `~/.claude/settings.json` (to check your retention setting).
+It reads only the local history directories of the agents you have installed, always read-only. For Claude Code that is `~/.claude/projects` (your transcripts) and `~/.claude/settings.json` (to check your retention setting).
 
 **Your repository names are never rendered**, never logged, and never written to `--json`. They are used as grouping keys and discarded before anything is displayed, so a screenshot is safe to post.
 
@@ -58,6 +58,7 @@ It reads exactly two paths, both read-only: `~/.claude/projects` (your transcrip
 ```sh
 npx @lfgcampos/agent-wrapped                 # terminal card, all available history
 npx @lfgcampos/agent-wrapped --since 30d     # window: 30d, 12w, 6m, or 2026-08-01
+npx @lfgcampos/agent-wrapped --source <id>   # read only one agent, e.g. claude-code
 npx @lfgcampos/agent-wrapped --html          # writes ~/.agent-wrapped/card.html
 npx @lfgcampos/agent-wrapped --json          # raw stats, for your own charts
 npx @lfgcampos/agent-wrapped --no-save       # skip writing a snapshot
@@ -116,6 +117,7 @@ Every percentage states its denominator, because the same figure can be honest t
 | **streak** | consecutive local calendar days with activity; "current" only if it reaches today or yesterday |
 | **day coverage** | active days over the span from your first to your last active day, inclusive — the "33 of 41" in the header |
 | **longest stretch** | the longest run of calls with no pause over 30 minutes in it. Deliberately *not* the span of a session: Claude Code resumes sessions, so one session id can cover days of wall clock with a weekend in the middle |
+| **omitted sections** | a source that cannot know a figure omits it rather than printing zero — an absent panel means "not knowable here", never "none" |
 
 Skill, repo and model shares are weighted by **tokens written**, not total tokens. Totals are dominated by cache reads, which would flatten everything to roughly the same value.
 

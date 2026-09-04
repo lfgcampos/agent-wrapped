@@ -1,0 +1,1 @@
+{"type":"assistant","timestamp":"2026-08-01T09:05:00.000","requestId":"r3","message":{"id":"m3","model":"claude-haiku-4-5-20251001","usage":{"input_tokens":30,"output_tokens":50,"cache_creation_input_tokens":0,"cache_read_input_tokens":9000},"content":[{"type":"tool_use","name":"Grep"},{"type":"tool_use","name":"Read"}]}}

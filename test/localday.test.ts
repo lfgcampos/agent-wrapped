@@ -65,3 +65,15 @@ test('reports a clear message when files exist but hold no usable records', asyn
   assert.match(stdout, /no usable/i);
   assert.doesNotMatch(stdout, /0 OF 0 DAYS ACTIVE/);
 });
+
+test('reports a clear message when the --since window contains no activity', async () => {
+  // This case was previously untested, which is exactly how a message that
+  // claimed "no transcripts found" — false, since the evening session's
+  // transcripts are right there, just outside the window — went unnoticed.
+  const home = await eveningSession();
+  const { stdout } = await exec(process.execPath, [cli, '--since', '2026-09-01'], {
+    env: { ...process.env, HOME: home, USERPROFILE: home },
+  });
+  assert.match(stdout, /No activity since 2026-09-01\./);
+  assert.doesNotMatch(stdout, /No Claude Code transcripts found/);
+});

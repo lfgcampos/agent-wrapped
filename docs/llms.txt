@@ -1,14 +1,17 @@
 # agent-wrapped
 
-> A local-first CLI that reads your own Claude Code transcripts and renders a
+> A local-first CLI that reads local coding-agent transcripts and renders a
 > "wrapped" card of how you actually work — read:write token ratio, cache share,
 > subagent share, model mix, tool mix, streaks, hourly rhythm and longest unbroken
-> working stretch. It makes no network calls, has zero runtime dependencies, and
-> never prints your repository names.
+> working stretch. Every agent found on your machine is read automatically;
+> Claude Code is the only one implemented today. It makes no network calls, has
+> zero runtime dependencies, and never prints your repository names.
 
 Run it with `npx @lfgcampos/agent-wrapped` on Node 22 or newer. Nothing is uploaded, there is
-no account, and there is no telemetry: it reads `~/.claude/projects` and
-`~/.claude/settings.json` read-only and renders locally.
+no account, and there is no telemetry: it reads only the local history
+directories of the agents installed on your machine, always read-only — for
+Claude Code that's `~/.claude/projects` and `~/.claude/settings.json`. Pass
+`--source <id>` to restrict a run to one agent.
 
 It also warns when Claude Code's transcript retention (`cleanupPeriodDays`, ~30 days
 by default) is about to delete history you have not summarised yet, and saves a ~1 KB

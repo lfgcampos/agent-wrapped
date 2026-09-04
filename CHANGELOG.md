@@ -6,6 +6,18 @@ Each released version needs a section here — the release workflow reads it as 
 
 ## [Unreleased]
 
+### Added
+
+- **agent-wrapped is no longer Claude-Code-only.** The reader sits behind a `Source` interface, and every agent found on your machine is read without a flag — detection, not configuration. Claude Code is the only implementation today; Codex and Cursor are [#3](https://github.com/lfgcampos/agent-wrapped/issues/3) and [#4](https://github.com/lfgcampos/agent-wrapped/issues/4).
+- **`--source <id>`** restricts a run to one agent. Without it, every agent found on the machine is read.
+- **Sources declare what they cannot know.** A source without cache accounting or skill attribution lists those fields in `unsupported`, and the card omits those sections rather than printing `0%`, which would read as "you never hit cache" rather than "this cannot be known here".
+
+### Changed
+
+- **Breaking: `--json` now keys its output by source id** — `{ "sources": { "claude-code": { … } } }` — with one shape whether you have one agent installed or three. A successful source carries `label`, `unsupported`, `stats`, `rhythm`, `signals`, `disk`, `pruning`, `previous`, `delta`; a failed one carries `label`, `reason` (`not-installed`, `failed`, `no-records` or `empty-window`) and that reason's own detail (`files`, or `cutoff`). Any figure the source listed in `unsupported` is `null`, never the `0` the generic pipeline computed for it — `cache` nulls `stats.cacheShare`; `subagents` nulls `stats.subagentCallShare` and `stats.subagentWrittenShare`; `skills` nulls `stats.skillAttributedShare`, `stats.distinctSkills`, `stats.topSkills` and `stats.topFourSkillShare`; `limitEvents` nulls `signals.limitEvents` and `signals.overloads`. The keys are always present, so the shape does not change with the source; `null` rather than `0` or `[]` because a zero or an empty list is what a real measurement of none looks like, and this is not one. **This breaks every existing consumer once — read `.sources["claude-code"].stats` where you used to read `.stats`.** `--json` always prints valid, parseable JSON, including when every source fails; the terminal and `--html` fall back to prose in that case, deliberately.
+- **Snapshots are now named `YYYY-MM-DD.<source>.json`.** An existing bare `YYYY-MM-DD.json` still loads and is read as Claude Code's; nothing is migrated or rewritten.
+- `Retention` split into a generic `Disk` and a Claude-Code-specific `Pruning`, so an agent with no retention setting can still report its disk footprint. Visible in `--json` only.
+
 ## [0.3.0]
 
 ### Added

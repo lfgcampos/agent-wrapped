@@ -1,4 +1,5 @@
-import type { Delta, Retention, Rhythm, Signals, Stats } from './types.js';
+import type { SourceResult } from './pipeline.js';
+import type { Unsupported } from './sources/types.js';
 import { toolShares, sessionStats } from './rhythm.js';
 
 const BAR_WIDTH = 14;
@@ -51,38 +52,35 @@ function hour12(h: number): string {
   return `${display}${suffix}`;
 }
 
-export function renderTerminal(
-  stats: Stats,
-  retention: Retention,
-  rhythm?: Rhythm,
-  signals?: Signals,
-  delta?: Delta | null,
-  savedTo?: string | null,
-): string {
+export function renderTerminal(result: SourceResult): string {
+  const { stats, rhythm, signals, disk, pruning, delta, savedTo, label } = result;
+  const omits = (field: Unsupported) => result.unsupported.includes(field);
   const lines: string[] = [];
-  const header = `CLAUDE CODE · ${stats.activeDays} OF ${stats.elapsedDays} DAYS ACTIVE`;
+  const header = `${label.toUpperCase()} · ${stats.activeDays} OF ${stats.elapsedDays} DAYS ACTIVE`;
   lines.push('');
   lines.push(`  ${header}${' '.repeat(Math.max(2, 58 - header.length))}${stats.firstDay} → ${stats.lastDay}`);
   lines.push('');
   lines.push(`         ${Math.round(stats.readWriteRatio)} : 1`);
   lines.push('         tokens read for every token written');
   lines.push('');
-  if (rhythm) {
-    lines.push('');
-    const streak =
-      rhythm.currentStreak > 0
-        ? `${rhythm.currentStreak}-day streak`
-        : `no streak right now · longest was ${rhythm.longestStreak}`;
-    const stretch = rhythm.longestStretchMs > 0 ? ` · ${duration(rhythm.longestStretchMs)} at a stretch` : '';
-    lines.push(`  ${streak} · longest ${rhythm.longestStreak}${stretch} · you work most at ${hour12(rhythm.peakHour)}`);
-    lines.push(`  ${sparkline(rhythm.hours)}   ${pct(rhythm.weekendShare)} of your writing is weekend work`);
-    lines.push('  00                      23');
-  }
+  lines.push('');
+  const streak =
+    rhythm.currentStreak > 0
+      ? `${rhythm.currentStreak}-day streak`
+      : `no streak right now · longest was ${rhythm.longestStreak}`;
+  const stretch = rhythm.longestStretchMs > 0 ? ` · ${duration(rhythm.longestStretchMs)} at a stretch` : '';
+  lines.push(`  ${streak} · longest ${rhythm.longestStreak}${stretch} · you work most at ${hour12(rhythm.peakHour)}`);
+  lines.push(`  ${sparkline(rhythm.hours)}   ${pct(rhythm.weekendShare)} of your writing is weekend work`);
+  lines.push('  00                      23');
 
   lines.push('');
-  lines.push(`  ${pct(stats.cacheShare).padStart(4)}   of what it read was cache — the same context, re-sent`);
-  lines.push(`  ${pct(stats.subagentCallShare).padStart(4)}   of your calls were subagents…`);
-  lines.push(`  ${pct(stats.subagentWrittenShare).padStart(4)}   …but they wrote only that share of the words`);
+  if (!omits('cache')) {
+    lines.push(`  ${pct(stats.cacheShare).padStart(4)}   of what it read was cache — the same context, re-sent`);
+  }
+  if (!omits('subagents')) {
+    lines.push(`  ${pct(stats.subagentCallShare).padStart(4)}   of your calls were subagents…`);
+    lines.push(`  ${pct(stats.subagentWrittenShare).padStart(4)}   …but they wrote only that share of the words`);
+  }
   // "3 of your 1 repos" is nonsense — the copy has to follow the repo count.
   if (stats.repoCount >= 3) {
     lines.push(`  ${pct(stats.topThreeShare).padStart(4)}   of your writing went to 3 of your ${stats.repoCount} repos`);
@@ -97,7 +95,7 @@ export function renderTerminal(
     lines.push(`  ${pct(model.share).padStart(4)}   of your writing came from ${model.model}, ${scope}`);
   }
 
-  if (stats.topSkills.length > 0) {
+  if (!omits('skills') && stats.topSkills.length > 0) {
     const max = stats.topSkills[0]!.share;
     lines.push('');
     lines.push(`  HOW YOU WORK   (% of words written inside a skill — ${pct(stats.skillAttributedShare)} of all work)`);
@@ -109,7 +107,7 @@ export function renderTerminal(
     );
   }
 
-  if (signals) {
+  {
     const tools = toolShares(signals.toolCounts).slice(0, 4);
     if (tools.length > 0) {
       const total = Object.values(signals.toolCounts).reduce((n, v) => n + v, 0);
@@ -130,7 +128,7 @@ export function renderTerminal(
       );
     }
 
-    if (signals.limitEvents.length > 0 || signals.overloads > 0) {
+    if (!omits('limitEvents') && (signals.limitEvents.length > 0 || signals.overloads > 0)) {
       const weeks = new Set(
         signals.limitEvents.map((e) => {
           const d = new Date(e.day);
@@ -158,12 +156,10 @@ export function renderTerminal(
     lines.push(`  SINCE YOUR LAST SNAPSHOT   (${p.takenAt}, ${daysApart} days ago)`);
     lines.push(`     ratio     ${arrow(stats.readWriteRatio, p.readWriteRatio, (n) => `${Math.round(n)} : 1`)}`);
     lines.push(`     written   ${arrow(stats.written, p.written, (n) => `${(n / 1e6).toFixed(1)}M`)}`);
-    if (rhythm) {
-      lines.push(`     streak    ${arrow(rhythm.currentStreak, p.currentStreak, (n) => `${Math.round(n)} days`)}`);
-      // Omitted rather than faked when the previous snapshot predates the field.
-      if (p.longestStretchMs !== undefined) {
-        lines.push(`     stretch   ${arrow(rhythm.longestStretchMs, p.longestStretchMs, duration)}`);
-      }
+    lines.push(`     streak    ${arrow(rhythm.currentStreak, p.currentStreak, (n) => `${Math.round(n)} days`)}`);
+    // Omitted rather than faked when the previous snapshot predates the field.
+    if (p.longestStretchMs !== undefined) {
+      lines.push(`     stretch   ${arrow(rhythm.longestStretchMs, p.longestStretchMs, duration)}`);
     }
     if (p.topSkill && stats.topSkills[0] && p.topSkill !== stats.topSkills[0].skill) {
       lines.push(`     top skill ${shortSkill(p.topSkill)} → ${shortSkill(stats.topSkills[0].skill)}`);
@@ -178,21 +174,21 @@ export function renderTerminal(
     }
   }
 
-  if (retention.atRisk) {
+  if (pruning?.atRisk) {
     lines.push('');
     lines.push(
-      `  ⚠  ${retention.windowDays} days of history · ${gb(retention.bytesOnDisk)} on disk` +
-        ` (${gb(retention.bytesPerDay)}/day)`,
+      `  ⚠  ${stats.elapsedDays} days of history · ${gb(disk.bytesOnDisk)} on disk` +
+        ` (${gb(disk.bytesPerDay)}/day)`,
     );
     lines.push('     Claude Code deletes transcripts after ~30 days by default,');
     lines.push('     so you are losing this data right now.');
     lines.push('');
     lines.push(
-      `     Keeping a full year would cost you about ${gb(retention.yearBytes)}.`,
+      `     Keeping a full year would cost you about ${gb(pruning.yearBytes)}.`,
     );
     lines.push(
-      `     Suggested, in ~/.claude/settings.json:  "cleanupPeriodDays": ${retention.suggestedDays}` +
-        `   (~${gb(retention.suggestedBytes)})`,
+      `     Suggested, in ~/.claude/settings.json:  "cleanupPeriodDays": ${pruning.suggestedDays}` +
+        `   (~${gb(pruning.suggestedBytes)})`,
     );
     lines.push('');
     lines.push('     Cheaper alternative: keep 30 days and run this monthly. Each');
@@ -211,4 +207,15 @@ export function renderTerminal(
   lines.push('  agent-wrapped.dev');
   lines.push('');
   return lines.join('\n');
+}
+
+/**
+ * Every source's card, in the order given.
+ *
+ * Separate cards rather than merged figures: read:write ratios from providers
+ * that count cache differently do not add up, and a merged headline would be a
+ * number that means nothing.
+ */
+export function renderCards(results: SourceResult[]): string {
+  return results.map(renderTerminal).join('\n');
 }

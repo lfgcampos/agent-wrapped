@@ -31,8 +31,8 @@ test('a snapshot is small enough that years of them are free', () => {
 test('re-running on the same day overwrites instead of accumulating', async () => {
   const dir = join(await mkdtemp(join(tmpdir(), 'aw-')), 'snaps');
   const snap = buildSnapshot(stats(), rhythm, signals, '2026-08-31');
-  const a = await saveSnapshot(dir, snap);
-  const b = await saveSnapshot(dir, { ...snap, calls: 200 });
+  const a = await saveSnapshot(dir, snap, 'claude-code');
+  const b = await saveSnapshot(dir, { ...snap, calls: 200 }, 'claude-code');
   assert.equal(a, b);
 });
 
@@ -43,7 +43,7 @@ test('loadPrevious ignores todays snapshot and returns the most recent earlier o
   for (const d of ['2026-06-01', '2026-07-01', '2026-08-31']) {
     await writeFile(join(dir, `${d}.json`), JSON.stringify({ ...base, takenAt: d }));
   }
-  const prev = await loadPrevious(dir, '2026-08-31');
+  const prev = await loadPrevious(dir, '2026-08-31', 'claude-code');
   assert.equal(prev!.takenAt, '2026-07-01');
 });
 
@@ -52,12 +52,12 @@ test('a corrupt snapshot is skipped, not fatal', async () => {
   await mkdir(dir, { recursive: true });
   await writeFile(join(dir, '2026-07-01.json'), '{ broken');
   await writeFile(join(dir, '2026-06-01.json'), JSON.stringify(buildSnapshot(stats(), rhythm, signals, '2026-06-01')));
-  const prev = await loadPrevious(dir, '2026-08-31');
+  const prev = await loadPrevious(dir, '2026-08-31', 'claude-code');
   assert.equal(prev!.takenAt, '2026-06-01');
 });
 
 test('no snapshots at all is not an error', async () => {
-  assert.equal(await loadPrevious('/nonexistent/path/xyz', '2026-08-31'), null);
+  assert.equal(await loadPrevious('/nonexistent/path/xyz', '2026-08-31', 'claude-code'), null);
 });
 
 test('detects history lost between runs', () => {
@@ -95,7 +95,60 @@ test('a snapshot written before these fields existed still loads', async () => {
   delete old.topModel;
   delete old.longestStretchMs;
   await writeFile(join(dir, '2026-08-01.json'), JSON.stringify(old), 'utf8');
-  const loaded = await loadPrevious(dir, '2026-09-01');
+  const loaded = await loadPrevious(dir, '2026-09-01', 'claude-code');
   assert.ok(loaded, 'an older snapshot is still readable');
   assert.equal(loaded.longestStretchMs, undefined);
+});
+
+test('a snapshot is written under a filename naming its source', async () => {
+  const dir = join(await mkdtemp(join(tmpdir(), 'aw-')), 'snaps');
+  const path = await saveSnapshot(dir, buildSnapshot(stats(), rhythm, signals, '2026-09-03'), 'codex');
+  assert.match(path, /2026-09-03\.codex\.json$/);
+});
+
+test('a source only ever loads its own snapshots', async () => {
+  const dir = join(await mkdtemp(join(tmpdir(), 'aw-')), 'snaps');
+  await saveSnapshot(dir, buildSnapshot(stats({ written: 111 }), rhythm, signals, '2026-09-01'), 'claude-code');
+  await saveSnapshot(dir, buildSnapshot(stats({ written: 222 }), rhythm, signals, '2026-09-01'), 'codex');
+  const claude = await loadPrevious(dir, '2026-09-03', 'claude-code');
+  const codex = await loadPrevious(dir, '2026-09-03', 'codex');
+  assert.equal(claude?.written, 111);
+  assert.equal(codex?.written, 222);
+});
+
+test('a bare filename from before namespacing is read as Claude Code', async () => {
+  // The format predates multi-source support, so an un-suffixed file can only
+  // have come from Claude Code. Migrating them would rewrite user data for no gain.
+  const dir = await mkdtemp(join(tmpdir(), 'aw-legacy-'));
+  await writeFile(
+    join(dir, '2026-08-01.json'),
+    JSON.stringify(buildSnapshot(stats({ written: 999 }), rhythm, signals, '2026-08-01')),
+    'utf8',
+  );
+  assert.equal((await loadPrevious(dir, '2026-09-03', 'claude-code'))?.written, 999);
+  assert.equal(await loadPrevious(dir, '2026-09-03', 'codex'), null);
+});
+
+test('the newest snapshot wins regardless of which naming it uses', async () => {
+  const dir = await mkdtemp(join(tmpdir(), 'aw-mixed-'));
+  await writeFile(join(dir, '2026-08-01.json'), JSON.stringify(buildSnapshot(stats({ written: 1 }), rhythm, signals, '2026-08-01')), 'utf8');
+  await saveSnapshot(dir, buildSnapshot(stats({ written: 2 }), rhythm, signals, '2026-08-20'), 'claude-code');
+  assert.equal((await loadPrevious(dir, '2026-09-03', 'claude-code'))?.written, 2);
+});
+
+test('the namespaced file wins when a bare file shares its date', async () => {
+  // A run just before an in-place upgrade can leave a bare 2026-09-03.json,
+  // then a later run the same day writes the namespaced file alongside it.
+  // Plain string sort puts the bare name after the namespaced one ('c' < 'j'
+  // means "claude-code.json" < "json"), so naive newest-first-by-string-order
+  // picks the stale bare file. The namespaced file was necessarily written
+  // later on that date, so it must win the tie.
+  const dir = await mkdtemp(join(tmpdir(), 'aw-collision-'));
+  await writeFile(
+    join(dir, '2026-09-03.json'),
+    JSON.stringify(buildSnapshot(stats({ written: 1 }), rhythm, signals, '2026-09-03')),
+    'utf8',
+  );
+  await saveSnapshot(dir, buildSnapshot(stats({ written: 2 }), rhythm, signals, '2026-09-03'), 'claude-code');
+  assert.equal((await loadPrevious(dir, '2026-09-04', 'claude-code'))?.written, 2);
 });
