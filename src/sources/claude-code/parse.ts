@@ -2,6 +2,7 @@ import { createReadStream } from 'node:fs';
 import { createInterface } from 'node:readline';
 import { basename } from 'node:path';
 import type { LimitEvent, Signals, TranscriptFile, UsageRecord } from '../../types.js';
+import { localDay } from '../../stats.js';
 
 function num(value: unknown): number {
   return typeof value === 'number' && Number.isFinite(value) ? value : 0;
@@ -61,7 +62,10 @@ async function parseFile(
       const text = messageText(parsed.message);
       const m = text.match(LIMIT_RE);
       if (m) {
-        const day = (parsed.timestamp ?? '').slice(0, 10);
+        // Local day, not a slice of the UTC string. A wall hit at 21:00 in
+        // Los Angeles is 04:00 the next day in UTC, so slicing files it under
+        // tomorrow — and the "across N weeks" figure counts these days.
+        const day = localDay(parsed.timestamp ?? '');
         // Retries repeat the identical wall message; one (day, kind, reset) is one event.
         const key = `${day}|${m[1]}|${m[2]}`;
         if (!limitKeys.has(key)) {

@@ -97,7 +97,11 @@ The registry returning 404 for `agent-wrapped` does **not** mean the name is ava
 
 Keep them focused, include a test, and say what you *considered and rejected* — that is the part a diff cannot show. If you are changing one of the rules above, open an issue first; they are all reversible, but each was a decision rather than an accident.
 
-Markdown in this repository is **not hard-wrapped**. One paragraph is one line, however long it runs; `.editorconfig` sets `max_line_length = off` for `*.md` so an editor does not quietly reflow it back. Wrap your editor, not the file.
+**Nothing here is hard-wrapped.** One paragraph is one line, however long it runs. That covers markdown in the repository — `.editorconfig` sets `max_line_length = off` for `*.md` so an editor does not quietly reflow it back — and it covers **commit message bodies, pull request descriptions, and issue and review comments** too. A commit's subject line stays short because it is a title; everything after the blank line is unwrapped prose.
+
+Wrapping prose to a column is a habit from terminals that no longer applies to any of these surfaces. It reflows badly in every renderer other than the one it was wrapped for, it makes a one-word edit diff a whole paragraph, and it forces the next person to re-wrap by hand. Wrap your editor, not the file.
+
+`docs/llms.txt` is the deliberate exception and stays wrapped at about 80 columns, because it is served as plain text to clients that do not reflow.
 
 Every pull request requests the owner's review, via `.github/CODEOWNERS`. That file only requests a review on its own; it blocks a merge only when branch protection on `main` has **Require review from Code Owners** enabled alongside **Require a pull request before merging**.
 

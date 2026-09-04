@@ -85,7 +85,10 @@ export function toolShares(counts: Record<string, number>): ToolShare[] {
   const total = Object.values(counts).reduce((n, v) => n + v, 0);
   return Object.entries(counts)
     .map(([tool, calls]) => ({ tool, calls, share: ratio(calls, total) }))
-    .sort((a, b) => b.calls - a.calls);
+    // Ties break by name, not by insertion order. Insertion order comes from
+    // discover()'s readdir walk, so two people with identical usage could
+    // otherwise see a different fourth tool depending on their filesystem.
+    .sort((a, b) => b.calls - a.calls || a.tool.localeCompare(b.tool));
 }
 
 export function sessionStats(sessionCalls: Record<string, number>): {

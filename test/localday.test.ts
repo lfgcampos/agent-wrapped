@@ -77,3 +77,33 @@ test('reports a clear message when the --since window contains no activity', asy
   assert.match(stdout, /No activity since 2026-09-01\./);
   assert.doesNotMatch(stdout, /No Claude Code transcripts found/);
 });
+
+/** A usage-wall notice at 21:00 in Los Angeles, which is the NEXT day in UTC. */
+async function limitEventDay(tz: string): Promise<string> {
+  const home = await mkdtemp(join(tmpdir(), 'aw-limit-'));
+  const project = join(home, '.claude', 'projects', '-Users-me-p');
+  await mkdir(project, { recursive: true });
+  const usage = JSON.stringify({
+    type: 'assistant', timestamp: '2026-08-02T04:00:00.000Z',
+    message: { id: 'm1', model: 'claude-opus-5', usage: { output_tokens: 10, cache_read_input_tokens: 100 } },
+  }) + '\n';
+  const wall = JSON.stringify({
+    type: 'assistant', timestamp: '2026-08-02T04:00:00.000Z', isApiErrorMessage: true,
+    message: { content: [{ type: 'text', text: 'You have hit your session limit. It resets 10:00pm.' }] },
+  }) + '\n';
+  await writeFile(join(project, 's.jsonl'), usage + wall);
+  const { stdout } = await exec(process.execPath, [cli, '--json', '--no-save'], {
+    env: { ...process.env, HOME: home, USERPROFILE: home, TZ: tz },
+  });
+  return JSON.parse(stdout).sources['claude-code'].signals.limitEvents[0].day;
+}
+
+test('a usage wall is filed under the local day, not the UTC day', async () => {
+  // 04:00Z on Aug 2 is 21:00 on Aug 1 in Los Angeles. Slicing the ISO string
+  // would file it under Aug 2 and inflate the "across N weeks" figure.
+  assert.equal(await limitEventDay('America/Los_Angeles'), '2026-08-01');
+});
+
+test('the same wall is the UTC day for a UTC user', async () => {
+  assert.equal(await limitEventDay('UTC'), '2026-08-02');
+});
