@@ -121,3 +121,17 @@ test('records with unusable timestamps do not join a stretch', () => {
   ]);
   assert.equal(r.longestStretchMs, 10 * 60_000);
 });
+
+test('tools with equal call counts are ordered by name, not by insertion order', () => {
+  // Insertion order below is the reverse of alphabetical, so a stable sort that
+  // ignored the name would preserve it and fail this. Insertion order comes
+  // from discover()'s readdir walk, which is a fact about the filesystem
+  // rather than about the user's work.
+  const order = toolShares({ Write: 2, Read: 2, Edit: 2 }).map((s) => s.tool);
+  assert.deepEqual(order, ['Edit', 'Read', 'Write']);
+});
+
+test('a tie-break never outranks a real difference in call count', () => {
+  const order = toolShares({ Zed: 9, Alpha: 1 }).map((s) => s.tool);
+  assert.deepEqual(order, ['Zed', 'Alpha']);
+});

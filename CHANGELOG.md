@@ -6,6 +6,12 @@ Each released version needs a section here — the release workflow reads it as 
 
 ## [Unreleased]
 
+### Fixed
+
+- **A usage-wall notice is filed under the local day, not a slice of the UTC string.** `LimitEvent.day` came from `timestamp.slice(0, 10)`, so a wall hit at 21:00 in Los Angeles was recorded as the next day — and that day feeds the "across N weeks" figure in `BATTLE SCARS`. This was the one place in the codebase still doing the UTC string slicing that CONTRIBUTING forbids, and the reason the rule exists: it broke streaks once already.
+- **Tool ties break by name rather than by filesystem order.** `toolShares` sorted on call count alone, so tools with equal counts kept their insertion order — which comes from `discover()`'s `readdir` walk. Two people with identical usage could see a different fourth tool in `WHAT YOU REACH FOR` depending on their filesystem. The top-four cut now depends only on the work.
+- **The FAQ rich result is no longer at risk from a drifted apostrophe.** `docs/index.html` carries every FAQ answer twice — visible prose and a JSON-LD `FAQPage` block — and Google drops the rich result when they disagree. One question used a curly apostrophe in the heading and a straight one in the structured copy. A new test now compares all of them, decoding entities first so legitimate typography like `&nbsp;` is not reported as a difference.
+
 ### Added
 
 - **agent-wrapped is no longer Claude-Code-only.** The reader sits behind a `Source` interface, and every agent found on your machine is read without a flag — detection, not configuration. Claude Code is the only implementation today; Codex and Cursor are [#3](https://github.com/lfgcampos/agent-wrapped/issues/3) and [#4](https://github.com/lfgcampos/agent-wrapped/issues/4).
