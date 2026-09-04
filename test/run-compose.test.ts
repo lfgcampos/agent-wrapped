@@ -7,6 +7,7 @@ import { fileURLToPath } from 'node:url';
 import { describeNoCards, failureWarnings, renderJson, htmlWrittenMessage, run } from '../src/run.js';
 import { analyseSource } from '../src/pipeline.js';
 import { claudeCode } from '../src/sources/claude-code/index.js';
+import { throwingSource } from './helpers/fake-source.js';
 import { localDay } from '../src/stats.js';
 import type { Source } from '../src/sources/types.js';
 import type { SourceOutcome } from '../src/pipeline.js';
@@ -16,22 +17,12 @@ const fixtureHome = join(repo, 'test', 'fixtures', 'claude-code');
 const NOW = new Date('2026-08-04T12:00:00.000');
 
 /**
- * A second source that always fails, so the multi-source composition rules
- * can be exercised without a second agent actually being installed anywhere.
+ * A second source that always fails, so the multi-source composition rules can
+ * be exercised without a second agent being installed anywhere. Named "broken"
+ * rather than "fake" because synthetic.test.ts has a *succeeding* fake, and the
+ * two used to share the id `fake` with opposite contracts.
  */
-const fakeAgent: Source = {
-  id: 'fake',
-  label: 'Fake Agent',
-  unsupported: [],
-  root: () => '/fake',
-  notInstalled: 'No Fake Agent history found.',
-  async discover() {
-    throw new Error('schema drift');
-  },
-  async parse() {
-    return { records: [], signals: { toolCounts: {}, userMessages: 0, limitEvents: [], overloads: 0, sessionCalls: {} } };
-  },
-};
+const brokenAgent: Source = throwingSource('broken');
 
 test('a lone failing source produces the exact pre-registry message', () => {
   const notInstalled: SourceOutcome = { ok: false, reason: 'not-installed' };
@@ -44,21 +35,21 @@ test('a lone failing source produces the exact pre-registry message', () => {
 
 test('several failed sources are each named, not folded into one generic message', () => {
   const outcomes: SourceOutcome[] = [{ ok: false, reason: 'not-installed' }, { ok: false, reason: 'failed' }];
-  const out = describeNoCards([claudeCode, fakeAgent], outcomes);
+  const out = describeNoCards([claudeCode, brokenAgent], outcomes);
   assert.match(out, /Claude Code: no history found/);
-  assert.match(out, /Fake Agent: could not be read/);
+  assert.match(out, /Broken Agent: could not be read/);
   assert.match(out, /Nothing to read — and nothing was sent anywhere\.$/);
 });
 
 test('a source failure is reported, not dropped, once another source has a card', async () => {
   const good = await analyseSource(claudeCode, fixtureHome, { since: null, save: false, now: NOW });
-  const bad = await analyseSource(fakeAgent, fixtureHome, { since: null, save: false, now: NOW });
+  const bad = await analyseSource(brokenAgent, fixtureHome, { since: null, save: false, now: NOW });
   if (!good.ok) throw new Error('expected the claude-code fixture to succeed');
   if (bad.ok) throw new Error('expected the fake agent to fail');
 
-  const warnings = failureWarnings([claudeCode, fakeAgent], [good, bad]);
+  const warnings = failureWarnings([claudeCode, brokenAgent], [good, bad]);
   assert.equal(warnings.length, 1);
-  assert.match(warnings[0]!, /Fake Agent: could not be read/);
+  assert.match(warnings[0]!, /Broken Agent: could not be read/);
 });
 
 test('a warning states the failure it actually was, not "could not be read" for all four', () => {
@@ -72,7 +63,7 @@ test('a warning states the failure it actually was, not "could not be read" for 
     { ok: false, reason: 'no-records', files: 7 },
     { ok: false, reason: 'empty-window', cutoff: '2026-09-01' },
   ];
-  const four = outcomes.map((_, i) => ({ ...fakeAgent, id: `s${i}`, label: `Agent ${i}` }));
+  const four = outcomes.map((_, i) => ({ ...brokenAgent, id: `s${i}`, label: `Agent ${i}` }));
   const warnings = failureWarnings(four, outcomes);
   assert.deepEqual(warnings, [
     '  ⚠  Agent 0: no history found.',
@@ -126,17 +117,17 @@ test('run.ts hardcodes no Claude-specific path', async () => {
 
 test('--json accounts for a failed source rather than silently omitting it', async () => {
   const good = await analyseSource(claudeCode, fixtureHome, { since: null, save: false, now: NOW });
-  const bad = await analyseSource(fakeAgent, fixtureHome, { since: null, save: false, now: NOW });
+  const bad = await analyseSource(brokenAgent, fixtureHome, { since: null, save: false, now: NOW });
   if (!good.ok) throw new Error('expected the claude-code fixture to succeed');
   if (bad.ok) throw new Error('expected the fake agent to fail');
 
-  const out = renderJson([claudeCode, fakeAgent], [good, bad]);
+  const out = renderJson([claudeCode, brokenAgent], [good, bad]);
   const parsed = JSON.parse(out);
   assert.deepEqual(Object.keys(parsed), ['sources']);
   assert.equal(parsed.sources['claude-code'].stats.calls, good.result.stats.calls);
-  assert.equal(parsed.sources.fake.label, 'Fake Agent');
-  assert.equal(parsed.sources.fake.reason, 'failed');
-  assert.equal(parsed.sources.fake.stats, undefined);
+  assert.equal(parsed.sources.broken.label, 'Broken Agent');
+  assert.equal(parsed.sources.broken.reason, 'failed');
+  assert.equal(parsed.sources.broken.stats, undefined);
 });
 
 test('--json keys by source id even when only one source was selected', async () => {
@@ -231,13 +222,13 @@ test('a fully-supporting source keeps every figure in --json — no regression f
 
 test('--html reports a failed source rather than silently writing only the successful one', async () => {
   const good = await analyseSource(claudeCode, fixtureHome, { since: null, save: false, now: NOW });
-  const bad = await analyseSource(fakeAgent, fixtureHome, { since: null, save: false, now: NOW });
+  const bad = await analyseSource(brokenAgent, fixtureHome, { since: null, save: false, now: NOW });
   if (!good.ok) throw new Error('expected the claude-code fixture to succeed');
   if (bad.ok) throw new Error('expected the fake agent to fail');
 
-  const out = htmlWrittenMessage('/tmp/card.html', [claudeCode, fakeAgent], [good, bad]);
+  const out = htmlWrittenMessage('/tmp/card.html', [claudeCode, brokenAgent], [good, bad]);
   assert.match(out, /^Wrote \/tmp\/card\.html/);
-  assert.match(out, /Fake Agent: could not be read/);
+  assert.match(out, /Broken Agent: could not be read/);
 });
 
 test('--html says nothing extra when every selected source has a card', async () => {

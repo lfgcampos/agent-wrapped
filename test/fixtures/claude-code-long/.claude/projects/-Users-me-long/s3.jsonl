@@ -1,0 +1,2 @@
+{"type":"user","timestamp":"2026-07-31T09:00:00.000","message":{"content":[{"type":"text","text":"end of the long window"}]}}
+{"type":"assistant","timestamp":"2026-07-31T09:10:00.000","requestId":"L3","attributionSkill":"superpowers:writing-plans","message":{"id":"L3","model":"claude-opus-5","usage":{"input_tokens":70000,"output_tokens":300000,"cache_creation_input_tokens":150000,"cache_read_input_tokens":22000000},"content":[{"type":"tool_use","name":"Bash"}]}}

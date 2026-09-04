@@ -1,0 +1,46 @@
+
+  CLAUDE CODE · 3 OF 27 DAYS ACTIVE                         2026-07-05 → 2026-07-31
+
+         85 : 1
+         tokens read for every token written
+
+
+  1-day streak · longest 1 · you work most at 9am
+  ▁▁▁▁▁▁▁▁▁██▁▁▁█▁▁▁▁▁▁▁▁▁   42% of your writing is weekend work
+  00                      23
+
+   98%   of what it read was cache — the same context, re-sent
+    0%   of your calls were subagents…
+    0%   …but they wrote only that share of the words
+   67%   of your writing came from Opus 5, of 2 models you used
+
+  HOW YOU WORK   (% of words written inside a skill — 67% of all work)
+  ██████████████  63%  brainstorming
+  ████████░░░░░░  38%  writing-plans
+                       …2 skills used · top 4 = 100% of skill work
+
+  WHAT YOU REACH FOR                    (% of 6 tool calls)
+  ██████████████  67%  Bash
+  ███████░░░░░░░  33%  Read
+
+  1.0 agent turns for every message you send · 3 sessions, longest 1 turns
+
+  BATTLE SCARS
+     1   times you hit the usage limit, across 1 week
+
+  SINCE YOUR LAST SNAPSHOT   (2026-07-15, 16 days ago)
+     ratio     85 : 1  ↑ from 60 : 1
+     written   1.2M  ↑ from 0.4M
+     streak    1 days  (unchanged)
+
+  ⚠  27 days of history · 0 MB on disk (0 MB/day)
+     Claude Code deletes transcripts after ~30 days by default,
+     so you are losing this data right now.
+
+     Keeping a full year would cost you about 0 MB.
+     Suggested, in ~/.claude/settings.json:  "cleanupPeriodDays": 365   (~0 MB)
+
+     Cheaper alternative: keep 30 days and run this monthly. Each
+     snapshot is a few KB, so years of history cost under a megabyte.
+
+  agent-wrapped.dev
