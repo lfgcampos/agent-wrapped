@@ -1,57 +1,19 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFile } from 'node:fs/promises';
-import { existsSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { analyseSource } from '../../src/pipeline.js';
 import type { SourceResult } from '../../src/pipeline.js';
 import { renderTerminal, renderCards } from '../../src/render-terminal.js';
 import { renderHtml } from '../../src/render-html.js';
-import type { Source } from '../../src/sources/types.js';
-import type { Signals, UsageRecord } from '../../src/types.js';
+import { syntheticSource } from '../helpers/fake-source.js';
 
 const repo = join(dirname(fileURLToPath(import.meta.url)), '..', '..', '..');
 const fakeHome = join(repo, 'test', 'fixtures', 'fake');
 const NOW = new Date('2026-08-03T12:00:00.000');
 
-/**
- * A second source that shares no convention with Claude Code: a flat
- * directory, its own line schema, and no skills, subagents, cache or limits.
- *
- * Its purpose is to fail if a Claude-specific assumption is reintroduced
- * downstream. It is a better test than a real second agent would be — hermetic,
- * and immune to an upstream directory reorganisation.
- */
-const fake: Source = {
-  id: 'fake',
-  label: 'Fake Agent',
-  notInstalled: 'No Fake Agent history found.',
-  root(home) {
-    const dir = join(home, '.fake', 'sessions');
-    return existsSync(dir) ? dir : null;
-  },
-  async discover(root) {
-    const path = join(root, 's1.jsonl');
-    return [{ path, size: 128, mtime: 0, project: 'proj', fromSubagentDir: false }];
-  },
-  async parse(files) {
-    const records: UsageRecord[] = [];
-    for (const f of files) {
-      for (const line of (await readFile(f.path, 'utf8')).split('\n').filter(Boolean)) {
-        const j = JSON.parse(line);
-        records.push({
-          id: j.ts, ts: j.ts, model: 'fake-model-1',
-          input: j.in, output: j.out, cacheCreate: 0, cacheRead: 0,
-          project: f.project, isSubagent: false, skill: null,
-        });
-      }
-    }
-    const signals: Signals = { toolCounts: {}, userMessages: 0, limitEvents: [], overloads: 0, sessionCalls: {} };
-    return { records, signals };
-  },
-  unsupported: ['skills', 'subagents', 'cache', 'limitEvents'],
-};
+/** The canonical second source. Defined once, in test/helpers/, not here. */
+const fake = syntheticSource();
 
 /** Run the fake source, unwrapping the discriminated outcome into its result. */
 async function analyseFake(): Promise<SourceResult> {
