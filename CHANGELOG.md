@@ -6,6 +6,8 @@ Each released version needs a section here — the release workflow reads it as 
 
 ## [Unreleased]
 
+## [0.4.0]
+
 ### Fixed
 
 - **A usage-wall notice is filed under the local day, not a slice of the UTC string.** `LimitEvent.day` came from `timestamp.slice(0, 10)`, so a wall hit at 21:00 in Los Angeles was recorded as the next day — and that day feeds the "across N weeks" figure in `BATTLE SCARS`. This was the one place in the codebase still doing the UTC string slicing that CONTRIBUTING forbids, and the reason the rule exists: it broke streaks once already.
@@ -92,7 +94,8 @@ Initial release.
 - Snapshots: each full run saves a ~1 KB summary to `~/.agent-wrapped/snapshots/` and compares against the previous one, so you can keep a year of history without keeping a year of transcripts.
 - A size-aware retention warning that measures your own growth rate rather than telling everyone to keep a year of transcripts.
 
-[Unreleased]: https://github.com/lfgcampos/agent-wrapped/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/lfgcampos/agent-wrapped/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/lfgcampos/agent-wrapped/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/lfgcampos/agent-wrapped/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/lfgcampos/agent-wrapped/compare/v0.1.2...v0.2.0
 [0.1.2]: https://github.com/lfgcampos/agent-wrapped/compare/v0.1.1...v0.1.2
