@@ -8,8 +8,6 @@
 npx @lfgcampos/agent-wrapped
 ```
 
-Published as [`agent-wrapped`](https://www.npmjs.com/package/@lfgcampos/agent-wrapped). Earlier releases went out under `@lfgcampos/agent-wrapped`, which still resolves but is no longer updated — switch to the unscoped name to keep getting releases.
-
 ```
   CLAUDE CODE · 33 OF 41 DAYS ACTIVE            2026-07-16 → 2026-08-25
 
