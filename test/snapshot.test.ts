@@ -56,6 +56,26 @@ test('a corrupt snapshot is skipped, not fatal', async () => {
   assert.equal(prev!.takenAt, '2026-06-01');
 });
 
+test('a corrupt file and a wrong-version file are both skipped', async () => {
+  const dir = join(await mkdtemp(join(tmpdir(), 'aw-')), 'snaps');
+  await mkdir(dir, { recursive: true });
+  const valid = buildSnapshot(stats(), rhythm, signals, '2026-06-01');
+  await writeFile(join(dir, '2026-08-01.json'), '{ broken');
+  await writeFile(join(dir, '2026-07-01.json'), JSON.stringify({ ...valid, version: 2, takenAt: '2026-07-01' }));
+  await writeFile(join(dir, '2026-06-01.json'), JSON.stringify(valid));
+  const prev = await loadPrevious(dir, '2026-08-31', 'claude-code');
+  assert.equal(prev!.takenAt, '2026-06-01');
+});
+
+test('no valid snapshot among corrupt and wrong-version files gives null', async () => {
+  const dir = join(await mkdtemp(join(tmpdir(), 'aw-')), 'snaps');
+  await mkdir(dir, { recursive: true });
+  const base = buildSnapshot(stats(), rhythm, signals, 'x');
+  await writeFile(join(dir, '2026-08-01.json'), '{ broken');
+  await writeFile(join(dir, '2026-07-01.json'), JSON.stringify({ ...base, version: 2 }));
+  assert.equal(await loadPrevious(dir, '2026-08-31', 'claude-code'), null);
+});
+
 test('no snapshots at all is not an error', async () => {
   assert.equal(await loadPrevious('/nonexistent/path/xyz', '2026-08-31', 'claude-code'), null);
 });
