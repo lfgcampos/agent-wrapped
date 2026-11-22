@@ -107,6 +107,30 @@ test('an unknown --source is rejected with the valid ids', async () => {
   assert.match(out, /claude-code/);
 });
 
+test('--since followed by another flag reports a missing value', async () => {
+  const out = await run(['--since', '--json'], await home());
+  assert.match(out, /--since needs a value/);
+  assert.doesNotMatch(out, /Could not understand/);
+});
+
+test('--source followed by another flag reports a missing value', async () => {
+  const out = await run(['--source', '--json'], await home());
+  assert.match(out, /--source needs a value/);
+  assert.doesNotMatch(out, /Unknown --source/);
+});
+
+test('a trailing --since with nothing after it reports a missing value', async () => {
+  const out = await run(['--since'], await home());
+  assert.match(out, /--since needs a value/);
+});
+
+test('--since works in both the spaced and the inline form', async () => {
+  const spaced = await run(['--since', '30d', '--no-save'], await home());
+  const inline = await run(['--since=30d', '--no-save'], await home());
+  assert.doesNotMatch(spaced, /needs a value|Could not understand/);
+  assert.doesNotMatch(inline, /needs a value|Could not understand/);
+});
+
 // '--source names the flag in --help' used to live here. Flag documentation is
 // asserted in one place now — test/help.test.ts, 'documents every flag the CLI
 // accepts', which is the test whose name claims that job. Add new flags to that
