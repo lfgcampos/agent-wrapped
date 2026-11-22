@@ -34,3 +34,21 @@ test('rejects nonsense rather than silently scanning everything', () => {
   assert.equal(parseSince('', now), null);
   assert.equal(parseSince('30', now), null);
 });
+
+test('rejects a zero-length window', () => {
+  assert.equal(parseSince('0d', now), null);
+  assert.equal(parseSince('0w', now), null);
+  assert.equal(parseSince('0m', now), null);
+});
+
+test('rejects an impossible calendar date', () => {
+  assert.equal(parseSince('2026-02-31', now), null);
+  assert.equal(parseSince('2026-13-01', now), null);
+  assert.equal(parseSince('2026-00-10', now), null);
+  assert.equal(parseSince('2026-04-31', now), null);
+});
+
+test('accepts the last day of a leap-year February', () => {
+  assert.equal(parseSince('2028-02-29', now)!.getDate(), 29);
+  assert.equal(parseSince('2026-02-29', now), null);
+});
