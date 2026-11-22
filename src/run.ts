@@ -61,9 +61,15 @@ function readVersion(): string {
 
 function flagValue(argv: string[], name: string): string | undefined {
   const i = argv.indexOf(name);
-  if (i >= 0 && argv[i + 1]) return argv[i + 1];
+  const next = argv[i + 1];
+  if (i >= 0 && next && !next.startsWith('--')) return next;
   const inline = argv.find((a) => a.startsWith(`${name}=`));
   return inline ? inline.slice(name.length + 1) : undefined;
+}
+
+/** A bare `name` with no usable value after it: the next token is absent or is another flag. */
+function missingValue(argv: string[], name: string): boolean {
+  return argv.includes(name) && flagValue(argv, name) === undefined;
 }
 
 /**
@@ -260,6 +266,10 @@ export function htmlWrittenMessage(out: string, sources: ReadonlyArray<Source>, 
 export async function run(argv: string[], home: string): Promise<string> {
   if (argv.includes('--help') || argv.includes('-h')) return HELP;
   if (argv.includes('--version') || argv.includes('-v')) return readVersion();
+
+  for (const name of ['--since', '--source']) {
+    if (missingValue(argv, name)) return `${name} needs a value, for example ${name === '--since' ? '--since 30d' : '--source claude-code'}.`;
+  }
 
   const sinceRaw = flagValue(argv, '--since');
   let since: Date | null = null;
