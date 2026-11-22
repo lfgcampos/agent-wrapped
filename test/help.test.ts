@@ -31,6 +31,14 @@ test('--help states the privacy position, since that is the pitch', async () => 
   assert.match(out, /never printed/i);
 });
 
+test('--help says a run with --since saves no snapshot', async () => {
+  // The code skips the snapshot for any windowed run, so someone running
+  // `--since 30d` weekly to build history would otherwise find nothing written.
+  // Whitespace-normalised, since the sentence wraps across lines.
+  const out = (await run(['--help'], '/nonexistent')).replace(/\s+/g, ' ');
+  assert.match(out, /A run with --since does not save a snapshot/);
+});
+
 test('--help works without any transcripts present', async () => {
   const out = await run(['-h'], '/nonexistent/path');
   assert.doesNotMatch(out, /No Claude Code transcripts/);

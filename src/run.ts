@@ -39,7 +39,8 @@ Options
 Snapshots
   Every full run saves a ~1 KB summary to ~/.agent-wrapped/snapshots/ and
   compares against the most recent earlier one, so you can keep a year of
-  history without keeping a year of transcripts.
+  history without keeping a year of transcripts. A run with --since does not
+  save a snapshot, so run without it to build history.
 
 Privacy
   Everything happens on your machine.
