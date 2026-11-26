@@ -96,10 +96,10 @@ async function parseFile(
     const message = parsed.message ?? {};
     const usage = message.usage;
     if (!usage) continue;
-    signals.sessionCalls[sessionId] = (signals.sessionCalls[sessionId] ?? 0) + 1;
     const id: string | undefined = message.id ?? parsed.requestId;
     if (!id || seen.has(id)) continue;
     seen.add(id);
+    signals.sessionCalls[sessionId] = (signals.sessionCalls[sessionId] ?? 0) + 1;
     const model: string = message.model ?? '';
     if (!model || model === '<synthetic>') continue;
     out.push({
