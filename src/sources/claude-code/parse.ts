@@ -8,14 +8,6 @@ function num(value: unknown): number {
   return typeof value === 'number' && Number.isFinite(value) ? value : 0;
 }
 
-/**
- * Stream one transcript. Transcripts reach hundreds of megabytes, so lines
- * are read one at a time and never buffered whole.
- *
- * `seen` is shared across every file: a single API response can appear as
- * several transcript lines sharing one message.id, and resumed sessions can
- * duplicate whole transcripts. Both collapse here.
- */
 /** Extract the plain text of a message, whatever shape the content takes. */
 function messageText(message: any): string {
   const c = message?.content;
@@ -34,6 +26,14 @@ function isHumanTurn(message: any): boolean {
 
 const LIMIT_RE = /hit your (\w+) limit.*?resets ([\d:apm.]+)/i;
 
+/**
+ * Stream one transcript. Transcripts reach hundreds of megabytes, so lines
+ * are read one at a time and never buffered whole.
+ *
+ * `seen` is shared across every file: a single API response can appear as
+ * several transcript lines sharing one message.id, and resumed sessions can
+ * duplicate whole transcripts. Both collapse here.
+ */
 async function parseFile(
   file: TranscriptFile,
   seen: Set<string>,
