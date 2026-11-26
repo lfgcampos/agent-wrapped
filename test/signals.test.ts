@@ -80,3 +80,8 @@ test('tracks calls per session', async () => {
   const { signals } = await parseAll(await file(withTools('m1', []) + withTools('m2', [])));
   assert.equal(signals.sessionCalls['sess-abc'], 2);
 });
+
+test('counts a message id once when two lines share it', async () => {
+  const { signals } = await parseAll(await file(withTools('m1', []) + withTools('m1', [])));
+  assert.equal(signals.sessionCalls['sess-abc'], 1);
+});
