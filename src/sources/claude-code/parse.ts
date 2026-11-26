@@ -67,10 +67,12 @@ async function parseFile(
         // tomorrow — and the "across N weeks" figure counts these days.
         const day = localDay(parsed.timestamp ?? '');
         // Retries repeat the identical wall message; one (day, kind, reset) is one event.
-        const key = `${day}|${m[1]}|${m[2]}`;
+        // LIMIT_RE ignores case, so the key uses the same lowercased kind that is stored.
+        const kind = m[1]!.toLowerCase();
+        const key = `${day}|${kind}|${m[2]}`;
         if (!limitKeys.has(key)) {
           limitKeys.add(key);
-          signals.limitEvents.push({ day, kind: m[1]!.toLowerCase(), resets: m[2]! } as LimitEvent);
+          signals.limitEvents.push({ day, kind, resets: m[2]! } as LimitEvent);
         }
       } else if (/overloaded/i.test(text)) {
         signals.overloads++;

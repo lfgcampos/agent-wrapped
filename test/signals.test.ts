@@ -24,10 +24,10 @@ const withTools = (id: string, names: string[]) =>
   }) + '\n';
 
 // Real shape: an ASSISTANT line flagged isApiErrorMessage, content as text blocks.
-const limitLine = (ts: string, resets: string) =>
+const limitLine = (ts: string, resets: string, kind = 'session') =>
   JSON.stringify({
     type: 'assistant', timestamp: ts, isApiErrorMessage: true,
-    message: { content: [{ type: 'text', text: `You've hit your session limit · resets ${resets} (America/Sao_Paulo)` }] },
+    message: { content: [{ type: 'text', text: `You've hit your ${kind} limit · resets ${resets} (America/Sao_Paulo)` }] },
   }) + '\n';
 
 test('counts tool calls by name', async () => {
@@ -59,6 +59,15 @@ test('deduplicates retried limit messages into one event', async () => {
     limitLine('2026-07-28T10:09:00.000Z', '1:30pm');
   const { signals } = await parseAll(await file(contents));
   assert.equal(signals.limitEvents.length, 1, 'three retries of the same wall are one event');
+  assert.equal(signals.limitEvents[0]!.kind, 'session');
+});
+
+test('treats limit kinds that differ only in case as one event', async () => {
+  const contents =
+    limitLine('2026-07-28T10:00:00.000Z', '1:30pm', 'session') +
+    limitLine('2026-07-28T10:05:00.000Z', '1:30pm', 'Session');
+  const { signals } = await parseAll(await file(contents));
+  assert.equal(signals.limitEvents.length, 1, "'session' and 'Session' are the same wall");
   assert.equal(signals.limitEvents[0]!.kind, 'session');
 });
 
