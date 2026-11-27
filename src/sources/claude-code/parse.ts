@@ -24,6 +24,17 @@ function isHumanTurn(message: any): boolean {
   return false;
 }
 
+/**
+ * Record `id` in `ids`. Returns false only when the string id is already in
+ * `ids`. A missing id always returns true.
+ */
+function firstSighting(ids: Set<string>, id: unknown): boolean {
+  if (typeof id !== 'string' || !id) return true;
+  if (ids.has(id)) return false;
+  ids.add(id);
+  return true;
+}
+
 const LIMIT_RE = /hit your (\w+) limit.*?resets ([\d:apm.]+)/i;
 
 /**
@@ -32,7 +43,10 @@ const LIMIT_RE = /hit your (\w+) limit.*?resets ([\d:apm.]+)/i;
  *
  * `seen` is shared across every file: a single API response can appear as
  * several transcript lines sharing one message.id, and resumed sessions can
- * duplicate whole transcripts. Both collapse here.
+ * duplicate whole transcripts. Both collapse here. `toolUseIds` and
+ * `userUuids` do the same for tool calls (by block id) and human turns (by
+ * line uuid), so a duplicated transcript counts them once too. A block or line
+ * without an id cannot be matched, so it is always counted.
  */
 async function parseFile(
   file: TranscriptFile,
@@ -40,6 +54,8 @@ async function parseFile(
   out: UsageRecord[],
   signals: Signals,
   limitKeys: Set<string>,
+  toolUseIds: Set<string>,
+  userUuids: Set<string>,
 ): Promise<void> {
   const sessionId = basename(file.path).replace(/\.jsonl$/, '');
   const stream = createReadStream(file.path, { encoding: 'utf8' });
@@ -83,7 +99,9 @@ async function parseFile(
     if (parsed?.type === 'user') {
       // Every tool result is also a "user" line. Only lines carrying actual
       // prose are turns a human took, and that is what the metric claims.
-      if (!parsed.isMeta && isHumanTurn(parsed.message)) signals.userMessages++;
+      if (!parsed.isMeta && isHumanTurn(parsed.message) && firstSighting(userUuids, parsed.uuid)) {
+        signals.userMessages++;
+      }
       continue;
     }
 
@@ -91,6 +109,7 @@ async function parseFile(
 
     for (const block of parsed.message?.content ?? []) {
       if (block?.type !== 'tool_use' || typeof block.name !== 'string') continue;
+      if (!firstSighting(toolUseIds, block.id)) continue;
       // Every MCP server would otherwise flood the list with one-off names.
       const name = block.name.startsWith('mcp__') ? 'MCP tool' : block.name;
       signals.toolCounts[name] = (signals.toolCounts[name] ?? 0) + 1;
@@ -127,9 +146,11 @@ export async function parseAll(
 ): Promise<{ records: UsageRecord[]; signals: Signals }> {
   const seen = new Set<string>();
   const limitKeys = new Set<string>();
+  const toolUseIds = new Set<string>();
+  const userUuids = new Set<string>();
   const out: UsageRecord[] = [];
   const signals: Signals = { toolCounts: {}, userMessages: 0, limitEvents: [], overloads: 0, sessionCalls: {} };
-  for (const file of files) await parseFile(file, seen, out, signals, limitKeys);
+  for (const file of files) await parseFile(file, seen, out, signals, limitKeys, toolUseIds, userUuids);
   signals.limitEvents.sort((a, b) => a.day.localeCompare(b.day));
   return { records: out, signals };
 }
