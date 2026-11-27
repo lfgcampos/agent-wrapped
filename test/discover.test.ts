@@ -33,7 +33,15 @@ test('attributes a subagent file to its real project, not to "subagents"', async
   assert.equal(sub.project, 'Projects-alpha');
 });
 
+test('keeps a repo whose own name contains "-worktree-"', () => {
+  assert.equal(normalizeProject('-Users-me-git-worktree-helper'), 'git-worktree-helper');
+  assert.equal(normalizeProject('-Users-me-my-worktrees-tool'), 'my-worktrees-tool');
+  assert.equal(normalizeProject('-Users-me-code--worktree-tools'), 'code--worktree-tools');
+});
+
 test('folds worktree checkouts into the parent repo', () => {
   assert.equal(normalizeProject('-Users-me-Projects-alpha--worktrees-feat'), 'Projects-alpha');
   assert.equal(normalizeProject('-Users-me-Projects-alpha'), 'Projects-alpha');
+  assert.equal(normalizeProject('-Users-me-repo--worktrees-feat'), 'repo');
+  assert.equal(normalizeProject('-Users-me-repo--claude-worktrees-x'), 'repo');
 });

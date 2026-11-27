@@ -6,11 +6,14 @@ import type { TranscriptFile } from '../../types.js';
  * Reduce an encoded transcript directory name to a stable grouping key.
  * Strips the leading home-directory prefix and folds worktree checkouts
  * into their parent repo. The result is never rendered — it only groups.
+ * Only the dot-prefixed worktree folders (`.worktrees/`, `.claude/worktrees/`)
+ * fold: the encoding turns their `/.` into `--`, so a repo whose own name
+ * holds `-worktree-` keeps its own key.
  */
 export function normalizeProject(dirName: string): string {
   return dirName
     .replace(/^-(Users|home)-[^-]+-/, '')
-    .replace(/--?worktrees?-.*$/, '');
+    .replace(/--(?:claude-)?worktrees-.*$/, '');
 }
 
 async function walk(dir: string, out: string[]): Promise<void> {
