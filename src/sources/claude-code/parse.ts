@@ -1,6 +1,6 @@
 import { createReadStream } from 'node:fs';
 import { createInterface } from 'node:readline';
-import { basename } from 'node:path';
+import { basename, sep } from 'node:path';
 import type { LimitEvent, Signals, TranscriptFile, UsageRecord } from '../../types.js';
 import { localDay } from '../../stats.js';
 
@@ -24,6 +24,23 @@ function isHumanTurn(message: any): boolean {
   return false;
 }
 
+/**
+ * A subagent's transcript sits anywhere under `<session>/subagents/`, either
+ * directly (`agent-*.jsonl`) or deeper (`workflows/wf_<id>/agent-*.jsonl`).
+ * It is part of that session, so its calls count toward `<session>`, not
+ * toward a session named after the agent file. `fromSubagentDir` is decided
+ * relative to the projects root, so a `subagents` folder above the root never
+ * reaches the `lastIndexOf` below.
+ */
+function sessionIdOf(file: TranscriptFile): string {
+  if (file.fromSubagentDir) {
+    const segments = file.path.split(sep);
+    const at = segments.lastIndexOf('subagents');
+    if (at > 0) return segments[at - 1]!;
+  }
+  return basename(file.path).replace(/\.jsonl$/, '');
+}
+
 const LIMIT_RE = /hit your (\w+) limit.*?resets ([\d:apm.]+)/i;
 
 /**
@@ -41,7 +58,7 @@ async function parseFile(
   signals: Signals,
   limitKeys: Set<string>,
 ): Promise<void> {
-  const sessionId = basename(file.path).replace(/\.jsonl$/, '');
+  const sessionId = sessionIdOf(file);
   const stream = createReadStream(file.path, { encoding: 'utf8' });
   const lines = createInterface({ input: stream, crlfDelay: Infinity });
   for await (const line of lines) {

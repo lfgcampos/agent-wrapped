@@ -1,9 +1,11 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtemp, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { join, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { parseAll } from '../src/sources/claude-code/parse.js';
+import { claudeCode } from '../src/sources/claude-code/index.js';
 import type { TranscriptFile } from '../src/types.js';
 
 async function file(contents: string): Promise<TranscriptFile[]> {
@@ -93,4 +95,24 @@ test('tracks calls per session', async () => {
 test('counts a message id once when two lines share it', async () => {
   const { signals } = await parseAll(await file(withTools('m1', []) + withTools('m1', [])));
   assert.equal(signals.sessionCalls['sess-abc'], 1);
+});
+
+test('a subagent transcript counts toward its parent session, not a session of its own', async () => {
+  const repo = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
+  const root = claudeCode.root(join(repo, 'test', 'fixtures', 'claude-code'))!;
+  const { signals } = await parseAll(await claudeCode.discover(root));
+  const keys = Object.keys(signals.sessionCalls);
+  assert.ok(keys.every((key) => !key.startsWith('agent-')), `no key from a subagent file name: ${keys.join(', ')}`);
+  assert.deepEqual(keys.sort(), ['s1', 's2']);
+});
+
+test('a workflow transcript nested deeper under subagents/ also counts toward its parent session', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'aw-'));
+  const wf = join(root, '-Users-me-alpha', 'sessA', 'subagents', 'workflows', 'wf_1');
+  await mkdir(wf, { recursive: true });
+  await writeFile(join(root, '-Users-me-alpha', 'sessA.jsonl'), withTools('n1', []));
+  await writeFile(join(wf, 'agent-x.jsonl'), withTools('n2', []));
+  await writeFile(join(wf, 'journal.jsonl'), withTools('n3', []));
+  const { signals } = await parseAll(await claudeCode.discover(root));
+  assert.deepEqual(signals.sessionCalls, { sessA: 3 });
 });
