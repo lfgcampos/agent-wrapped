@@ -26,7 +26,7 @@
   ████████░░░░░░  20%  Edit
   █████░░░░░░░░░  13%  Write
 
-  2.5 agent turns for every message you send · 3 sessions, longest 2 turns
+  2.5 agent turns for every message you send · 2 sessions, longest 3 turns
 
   BATTLE SCARS
      1   times you hit the usage limit, across 1 week
