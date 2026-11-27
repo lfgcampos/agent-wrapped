@@ -41,6 +41,12 @@ test('rejects a zero-length window', () => {
   assert.equal(parseSince('0m', now), null);
 });
 
+test('rejects a window too large for a date', () => {
+  assert.equal(parseSince('999999999d', now), null);
+  assert.equal(parseSince('999999999w', now), null);
+  assert.equal(parseSince('999999999m', now), null);
+});
+
 test('rejects an impossible calendar date', () => {
   assert.equal(parseSince('2026-02-31', now), null);
   assert.equal(parseSince('2026-13-01', now), null);
