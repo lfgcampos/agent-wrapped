@@ -11,10 +11,34 @@ const now = new Date('2026-08-25T12:00:00');
  */
 const daysBack = (value: string) => Math.round((now.getTime() - parseSince(value, now)!.getTime()) / 86_400_000);
 
-test('parses day, week and month windows', () => {
+/** The local calendar date of a cutoff, so a month window is checked as a date, not a day count. */
+const localDate = (d: Date) => [d.getFullYear(), d.getMonth() + 1, d.getDate()];
+
+test('parses day and week windows', () => {
   assert.equal(daysBack('30d'), 30);
   assert.equal(daysBack('2w'), 14);
-  assert.equal(daysBack('6m'), 180);
+});
+
+test('parses a month window as calendar months, not 30-day blocks', () => {
+  assert.deepEqual(localDate(parseSince('6m', now)!), [2026, 2, 25]);
+  assert.deepEqual(localDate(parseSince('12m', new Date(2026, 10, 27))!), [2025, 11, 27]);
+  assert.deepEqual(localDate(parseSince('14m', new Date(2026, 0, 15))!), [2024, 11, 15]);
+});
+
+test('keeps the time of day in a month window', () => {
+  const cutoff = parseSince('1m', now)!;
+  assert.equal(cutoff.getHours(), 12);
+  assert.equal(cutoff.getMinutes(), 0);
+});
+
+test('clamps a month window to the last day of a shorter month', () => {
+  assert.deepEqual(localDate(parseSince('1m', new Date(2026, 2, 31))!), [2026, 2, 28]);
+  assert.deepEqual(localDate(parseSince('1m', new Date(2028, 2, 31))!), [2028, 2, 29]);
+  assert.deepEqual(localDate(parseSince('6m', new Date(2026, 7, 31))!), [2026, 2, 28]);
+});
+
+test('rejects a month window too large for a date', () => {
+  assert.equal(parseSince('99999999m', now), null);
 });
 
 test('is not confused by spacing or case', () => {
