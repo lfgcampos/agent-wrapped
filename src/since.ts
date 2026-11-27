@@ -2,9 +2,9 @@
  * Parse a --since value into a cutoff date.
  *
  * Accepts a relative window (`30d`, `12w`, `6m`) or an ISO date (`2026-08-01`).
- * Returns null when the value is not understood (a zero-length window or an
- * impossible calendar date counts), so the caller can complain rather than
- * silently analysing everything.
+ * Returns null when the value is not understood (a zero-length window, a window
+ * too large for a Date or an impossible calendar date counts), so the caller can
+ * complain rather than silently analysing everything.
  */
 export function parseSince(value: string, now: Date = new Date()): Date | null {
   const relative = value.trim().match(/^(\d+)\s*([dwm])$/i);
@@ -13,7 +13,9 @@ export function parseSince(value: string, now: Date = new Date()): Date | null {
     if (n === 0) return null;
     const unit = relative[2]!.toLowerCase();
     const days = unit === 'd' ? n : unit === 'w' ? n * 7 : n * 30;
-    return new Date(now.getTime() - days * 86_400_000);
+    const cutoff = new Date(now.getTime() - days * 86_400_000);
+    // A window too large for a Date gives an Invalid Date, which callers would accept.
+    return Number.isNaN(cutoff.getTime()) ? null : cutoff;
   }
   if (/^\d{4}-\d{2}-\d{2}$/.test(value.trim())) {
     const [year, month, day] = value.trim().split('-').map(Number) as [number, number, number];
