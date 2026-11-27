@@ -1,7 +1,7 @@
 import { dirname } from 'node:path';
 import { readFileSync } from 'node:fs';
 import { mkdir, writeFile } from 'node:fs/promises';
-import { cardPath, openCommand } from './paths.js';
+import { cardPath, openHint } from './paths.js';
 import { SOURCES, selectSources } from './sources/index.js';
 import type { Source, Unsupported } from './sources/types.js';
 import { analyseSource } from './pipeline.js';
@@ -254,7 +254,7 @@ export function renderJson(sources: ReadonlyArray<Source>, outcomes: SourceOutco
  * source that failed alongside the one that got written.
  */
 export function htmlWrittenMessage(out: string, sources: ReadonlyArray<Source>, outcomes: SourceOutcome[]): string {
-  const wrote = `Wrote ${out}\nOpen it with:  ${openCommand()} ${out}`;
+  const wrote = `Wrote ${out}\nOpen it with:  ${openHint(out)}`;
   const warnings = failureWarnings(sources, outcomes);
   return warnings.length > 0 ? [wrote, ...warnings].join('\n') : wrote;
 }

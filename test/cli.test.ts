@@ -3,10 +3,11 @@ import assert from 'node:assert/strict';
 import { access, mkdtemp, mkdir, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { openCommand } from '../src/paths.js';
 import { run } from '../src/run.js';
 
-async function home(): Promise<string> {
-  const root = await mkdtemp(join(tmpdir(), 'aw-'));
+async function home(prefix = 'aw-'): Promise<string> {
+  const root = await mkdtemp(join(tmpdir(), prefix));
   const project = join(root, '.claude', 'projects', '-Users-me-Projects-alpha');
   await mkdir(join(project, 'sess-1', 'subagents'), { recursive: true });
   const record = (id: string, extra: Record<string, unknown> = {}) =>
@@ -83,6 +84,14 @@ test('--html writes into the tool directory under the given home', async () => {
   const out = await run(['--html'], root);
   assert.ok(out.includes(join(root, '.agent-wrapped', 'card.html')), out);
   assert.doesNotMatch(out, /agent-wrapped\.html/, 'the old flat temp filename is gone');
+});
+
+test('--html quotes the card path in the open hint when the home directory has a space', async () => {
+  const root = await home('aw space-');
+  const out = await run(['--html'], root);
+  const card = join(root, '.agent-wrapped', 'card.html');
+  const expected = process.platform === 'win32' ? `${openCommand()} "" "${card}"` : `${openCommand()} '${card}'`;
+  assert.ok(out.includes(`Open it with:  ${expected}`), out);
 });
 
 test('--html --json together write the file and return parseable JSON — neither cancels the other', async () => {
