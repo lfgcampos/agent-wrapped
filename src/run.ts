@@ -13,11 +13,6 @@ import { renderHtml } from './render-html.js';
 /** A source that produced no card, paired with why. */
 type Failure = Extract<SourceOutcome, { ok: false }>;
 
-/**
- * Pure entry point: takes the home directory as a parameter so tests can point
- * it at a fixture tree. Importing this module must never execute anything —
- * that is why the bin wrapper lives in cli.ts.
- */
 const HELP = `agent-wrapped — a local-first wrapped card for the coding agents on your
 machine. Claude Code is the only one implemented today.
 
@@ -264,6 +259,11 @@ export function htmlWrittenMessage(out: string, sources: ReadonlyArray<Source>, 
   return warnings.length > 0 ? [wrote, ...warnings].join('\n') : wrote;
 }
 
+/**
+ * Pure entry point: takes the home directory as a parameter so tests can point
+ * it at a fixture tree. Importing this module must never execute anything —
+ * that is why the bin wrapper lives in cli.ts.
+ */
 export async function run(argv: string[], home: string): Promise<string> {
   if (argv.includes('--help') || argv.includes('-h')) return HELP;
   if (argv.includes('--version') || argv.includes('-v')) return readVersion();
