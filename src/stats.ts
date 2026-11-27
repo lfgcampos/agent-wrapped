@@ -84,14 +84,14 @@ export function computeStats(records: UsageRecord[]): Stats {
   const byModel = sumBy(records, (r) => displayModel(r.model), (r) => r.output);
   const models: ModelShare[] = [...byModel.entries()]
     .map(([model, w]) => ({ model, written: w, share: ratio(w, written) }))
-    .sort((a, b) => b.written - a.written);
+    .sort((a, b) => b.written - a.written || a.model.localeCompare(b.model));
 
   const skilled = records.filter((r) => r.skill !== null);
   const skillWritten = skilled.reduce((n, r) => n + r.output, 0);
   const bySkill = sumBy(skilled, (r) => r.skill as string, (r) => r.output);
   const ranked: SkillShare[] = [...bySkill.entries()]
     .map(([skill, w]) => ({ skill, written: w, share: ratio(w, skillWritten) }))
-    .sort((a, b) => b.written - a.written);
+    .sort((a, b) => b.written - a.written || a.skill.localeCompare(b.skill));
   const topSkills = ranked.slice(0, 4);
 
   return {

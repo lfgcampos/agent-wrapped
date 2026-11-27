@@ -136,6 +136,22 @@ test('model shares are weighted by tokens written, over all writing', () => {
   assert.equal(s.models[2]!.model, 'Haiku 4.5');
 });
 
+test('equal-output models and skills rank by name, whatever order the records arrive in', () => {
+  const records = [
+    rec({ model: 'claude-sonnet-4-5-20250929', skill: 'zeta', output: 10 }),
+    rec({ model: 'claude-opus-5', skill: 'alpha', output: 10 }),
+    rec({ model: 'claude-haiku-4-5-20251001', skill: 'mid', output: 10 }),
+    rec({ model: 'claude-fable-5-1', skill: 'beta', output: 10 }),
+    rec({ model: 'claude-opus-5', skill: 'gamma', output: 10 }),
+  ];
+  const forward = computeStats(records);
+  const backward = computeStats([...records].reverse());
+  assert.deepEqual(backward.models, forward.models);
+  assert.deepEqual(backward.topSkills, forward.topSkills);
+  assert.deepEqual(forward.models.map((m) => m.model), ['Opus 5', 'Fable 5.1', 'Haiku 4.5', 'Sonnet 4.5']);
+  assert.deepEqual(forward.topSkills.map((s) => s.skill), ['alpha', 'beta', 'gamma', 'mid']);
+});
+
 test('one model on two context tiers is one share, not two', () => {
   const s = computeStats([
     rec({ model: 'claude-opus-5', output: 50 }),
