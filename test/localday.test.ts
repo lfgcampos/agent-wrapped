@@ -78,6 +78,17 @@ test('reports a clear message when the --since window contains no activity', asy
   assert.doesNotMatch(stdout, /No Claude Code transcripts found/);
 });
 
+test('a --since cutoff before year 1000 still keeps every record', async () => {
+  // 550000d lands in year 521. An unpadded year once made the cutoff sort after
+  // every 2026 day, so the run said "No activity since 521-01-21."
+  const home = await eveningSession();
+  const { stdout } = await exec(process.execPath, [cli, '--since', '550000d', '--json', '--no-save'], {
+    env: { ...process.env, HOME: home, USERPROFILE: home, TZ: 'UTC' },
+  });
+  assert.doesNotMatch(stdout, /No activity since/);
+  assert.equal(JSON.parse(stdout).sources['claude-code'].stats.activeDays, 2);
+});
+
 /** A usage-wall notice at 21:00 in Los Angeles, which is the NEXT day in UTC. */
 async function limitEventDay(tz: string): Promise<string> {
   const home = await mkdtemp(join(tmpdir(), 'aw-limit-'));

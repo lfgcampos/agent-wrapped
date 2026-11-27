@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { computeStats, displayModel } from '../src/stats.js';
+import { computeStats, displayModel, localDay } from '../src/stats.js';
 import type { UsageRecord } from '../src/types.js';
 
 function rec(over: Partial<UsageRecord> = {}): UsageRecord {
@@ -77,6 +77,19 @@ test('active days counts distinct calendar days, not the span between them', () 
   assert.equal(s.activeDays, 2);
   assert.equal(s.firstDay, '2026-07-16');
   assert.equal(s.lastDay, '2026-08-24');
+});
+
+test('localDay pads a year before 1000 to four digits, so the day still sorts as a string', () => {
+  // A --since cutoff of 550000d lands in year 521. Unpadded, "521-01-21" sorts
+  // after "2026-..." and the cutoff filters out every record.
+  assert.equal(localDay(new Date(521, 0, 21, 12).toISOString()), '0521-01-21');
+  const yearThree = new Date(2000, 7, 5, 12);
+  yearThree.setFullYear(3);
+  assert.equal(localDay(yearThree.toISOString()), '0003-08-05');
+  // A negative year keeps its sign unpadded: its '-' already sorts before every digit.
+  const yearMinusFive = new Date(2000, 0, 21, 12);
+  yearMinusFive.setFullYear(-5);
+  assert.equal(localDay(yearMinusFive.toISOString()), '-5-01-21');
 });
 
 test('empty input produces zeroes rather than NaN', () => {
