@@ -66,6 +66,12 @@ test('session stats report count, median and largest', () => {
   assert.equal(s.largest, 2102);
 });
 
+test('session median averages the two middle values for an even count', () => {
+  assert.equal(sessionStats({ a: 1, b: 9 }).median, 5);
+  assert.equal(sessionStats({ a: 1, b: 2, c: 9 }).median, 2);
+  assert.equal(sessionStats({ a: 9, b: 1, c: 4, d: 100 }).median, 6.5);
+});
+
 test('empty input never yields NaN', () => {
   const r = computeRhythm([], new Date('2026-08-24T12:00:00'));
   assert.equal(r.currentStreak, 0);

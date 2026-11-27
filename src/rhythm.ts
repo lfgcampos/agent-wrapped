@@ -98,9 +98,12 @@ export function sessionStats(sessionCalls: Record<string, number>): {
 } {
   const values = Object.values(sessionCalls).sort((a, b) => a - b);
   if (values.length === 0) return { count: 0, median: 0, largest: 0 };
+  const mid = Math.floor(values.length / 2);
+  // An even count has two middle values. The median is their mean.
+  const median = values.length % 2 === 0 ? (values[mid - 1]! + values[mid]!) / 2 : values[mid]!;
   return {
     count: values.length,
-    median: values[Math.floor(values.length / 2)]!,
+    median,
     largest: values[values.length - 1]!,
   };
 }
