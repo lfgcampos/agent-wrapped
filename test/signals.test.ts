@@ -13,15 +13,23 @@ async function file(contents: string): Promise<TranscriptFile[]> {
   return [{ path, size: 100, mtime: Date.now(), project: 'a', fromSubagentDir: false }];
 }
 
-const withTools = (id: string, names: string[]) =>
+// A tool is a bare name, or a name with the block id real transcripts carry.
+const withTools = (id: string, tools: (string | { id?: string; name: string })[]) =>
   JSON.stringify({
     type: 'assistant', timestamp: '2026-08-01T10:00:00.000Z',
     message: {
       id, model: 'claude-opus-5',
       usage: { output_tokens: 10, cache_read_input_tokens: 100 },
-      content: names.map((name) => ({ type: 'tool_use', name })),
+      content: tools.map((t) => ({ type: 'tool_use', ...(typeof t === 'string' ? { name: t } : t) })),
     },
   }) + '\n';
+
+const humanLine = (text: string, uuid?: string) =>
+  JSON.stringify({ type: 'user', ...(uuid ? { uuid } : {}), message: { content: text } }) + '\n';
+
+async function twoFiles(a: string, b: string): Promise<TranscriptFile[]> {
+  return [...(await file(a)), ...(await file(b))];
+}
 
 // Real shape: an ASSISTANT line flagged isApiErrorMessage, content as text blocks.
 const limitLine = (ts: string, resets: string, kind = 'session') =>
@@ -42,6 +50,25 @@ test('collapses every MCP tool into one bucket', async () => {
   assert.equal(signals.toolCounts['mcp__github__get_issue'], undefined);
 });
 
+test('counts a tool_use block once when its line is duplicated', async () => {
+  const line = withTools('m1', [{ id: 'toolu_1', name: 'Bash' }, { id: 'toolu_2', name: 'Edit' }]);
+  const { signals } = await parseAll(await file(line + line));
+  assert.equal(signals.toolCounts['Bash'], 1);
+  assert.equal(signals.toolCounts['Edit'], 1);
+});
+
+test('counts a tool_use block once when a resumed session duplicates the transcript', async () => {
+  const line = withTools('m1', [{ id: 'toolu_1', name: 'Bash' }]);
+  const { signals } = await parseAll(await twoFiles(line, line));
+  assert.equal(signals.toolCounts['Bash'], 1);
+});
+
+test('still counts tool_use blocks that carry no id', async () => {
+  const line = withTools('m1', [{ name: 'Bash' }]);
+  const { signals } = await parseAll(await file(line + line));
+  assert.equal(signals.toolCounts['Bash'], 2);
+});
+
 test('counts human turns but not tool results fed back as user lines', async () => {
   const contents =
     withTools('m1', ['Bash']) +
@@ -50,6 +77,23 @@ test('counts human turns but not tool results fed back as user lines', async () 
     JSON.stringify({ type: 'user', isMeta: true, message: { content: [{ type: 'text', text: 'system note' }] } }) + '\n';
   const { signals } = await parseAll(await file(contents));
   assert.equal(signals.userMessages, 1, 'only the typed message counts');
+});
+
+test('counts a human turn once when its uuid repeats', async () => {
+  const line = humanLine('hi', 'u-1');
+  const { signals } = await parseAll(await twoFiles(line + line, line));
+  assert.equal(signals.userMessages, 1);
+});
+
+test('counts human turns with different uuids separately', async () => {
+  const { signals } = await parseAll(await file(humanLine('hi', 'u-1') + humanLine('hi', 'u-2')));
+  assert.equal(signals.userMessages, 2);
+});
+
+test('still counts human turns that carry no uuid', async () => {
+  const line = humanLine('hi');
+  const { signals } = await parseAll(await file(line + line));
+  assert.equal(signals.userMessages, 2);
 });
 
 test('deduplicates retried limit messages into one event', async () => {
